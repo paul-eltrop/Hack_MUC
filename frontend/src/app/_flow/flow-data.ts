@@ -19,6 +19,14 @@ export type FlowNodeData = {
   subtitle?: string;
   emojiCode: string;
   errorCount: number;
+  /** Default `true`. Set to `false` um Zoom-In + Sub-Flow für diesen Node zu deaktivieren. */
+  zoomable?: boolean;
+  /** Intern: triggert Disappear-Animation während des Swaps. */
+  _disappearing?: boolean;
+  /** Intern: triggert Pop-In-Animation beim Mount (für Back-Animation). */
+  _entering?: boolean;
+  /** Intern: nur für Bg-Node — triggert Reverse-Skalierung zu 0. */
+  _reversing?: boolean;
   batches?: BatchInfo[];
   country?: string;
   bgColor?: string;
@@ -225,10 +233,11 @@ export type SubFlow = { nodes: TopFlowNode[]; edges: Edge[] };
 
 function placeholderSubFlow(parentId: string, parentTitle: string): SubFlow {
   const id = (n: number) => `${parentId}-sub-${n}`;
+  // 3 Mini-Nodes (60×60) horizontal: Gesamt-Footprint 220×60, passt in 1 Main-Node.
   const makeNode = (n: number, x: number): TopFlowNode => ({
     id: id(n),
-    type: "flow",
-    position: { x, y: 120 },
+    type: "flowMini",
+    position: { x, y: 0 },
     data: {
       kind: "supplier",
       title: `Sub ${String.fromCharCode(64 + n)}`,
@@ -238,7 +247,7 @@ function placeholderSubFlow(parentId: string, parentTitle: string): SubFlow {
     },
   });
   return {
-    nodes: [makeNode(1, 40), makeNode(2, 380), makeNode(3, 720)],
+    nodes: [makeNode(1, 0), makeNode(2, 80), makeNode(3, 160)],
     edges: [
       { id: `${id(1)}->${id(2)}`, source: id(1), target: id(2) },
       { id: `${id(2)}->${id(3)}`, source: id(2), target: id(3) },

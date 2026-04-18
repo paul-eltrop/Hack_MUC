@@ -22,7 +22,13 @@ export function LabeledEdge({
   label,
   markerEnd,
   style,
+  data,
 }: EdgeProps) {
+  const flags = data as
+    | { _disappearing?: boolean; _entering?: boolean }
+    | undefined;
+  const disappearing = flags?._disappearing === true;
+  const entering = flags?._entering === true;
   const [path, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -52,27 +58,45 @@ export function LabeledEdge({
   const displayX = labelX + perpX * perpDist;
   const displayY = labelY + perpY * perpDist;
 
+  const pathStyle = disappearing
+    ? { ...style, animation: "edge-disappear 250ms ease-out forwards" }
+    : entering
+      ? { ...style, animation: "edge-appear 250ms ease-out both" }
+      : style;
+
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} />
+      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={pathStyle} />
       {label && (
         <EdgeLabelRenderer>
           <div
+            className="nodrag nopan"
             style={{
               position: "absolute",
               transform: `translate(-50%, -50%) translate(${displayX}px, ${displayY}px)`,
               pointerEvents: "none",
-              padding: "2px 8px",
-              fontSize: 11,
-              fontWeight: 500,
-              color: "#52525b",
-              background: "rgba(250, 250, 250, 0.9)",
-              backdropFilter: "blur(2px)",
-              borderRadius: 4,
             }}
-            className="nodrag nopan"
           >
-            {label}
+            <div
+              className={
+                disappearing
+                  ? "animate-node-disappear"
+                  : entering
+                    ? "animate-node-pop-in"
+                    : ""
+              }
+              style={{
+                padding: "2px 8px",
+                fontSize: 11,
+                fontWeight: 500,
+                color: "#52525b",
+                background: "rgba(250, 250, 250, 0.9)",
+                backdropFilter: "blur(2px)",
+                borderRadius: 4,
+              }}
+            >
+              {label}
+            </div>
           </div>
         </EdgeLabelRenderer>
       )}
