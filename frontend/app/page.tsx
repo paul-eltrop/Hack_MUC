@@ -2,7 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { investigations } from "./data";
+
+// FlowView nutzt @xyflow/react — client-only via dynamic import.
+const FlowView = dynamic(() => import("./_flow/FlowView"), { ssr: false });
 
 type Filter = "All" | "Critical" | "Not Assigned" | "Assigned";
 
@@ -39,8 +43,13 @@ export default function Home() {
   const visible = applyFilter(filter);
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-6">
+    <div
+      className="flex bg-white overflow-hidden"
+      style={{ height: "calc(100vh - 64px)" }}
+    >
+      {/* LEFT: Investigations-Liste, scrollt eigenständig */}
+      <aside className="w-[680px] flex-shrink-0 overflow-y-auto border-r border-gray-100">
+        <div className="px-6">
 
         <div className="pt-12 pb-8">
           <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-3">
@@ -128,7 +137,13 @@ export default function Home() {
         </div>
 
         <div className="h-16" />
-      </div>
+        </div>
+      </aside>
+
+      {/* RIGHT: Flow-Canvas (Suppliers/Factories/Articles/Field) */}
+      <main className="flex-1 relative min-w-0">
+        <FlowView />
+      </main>
     </div>
   );
 }
