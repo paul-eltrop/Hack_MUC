@@ -33,7 +33,7 @@ type Granularity = "year" | "month" | "week";
 const GRANULARITY_LABELS: Record<Granularity, string> = {
   year: "Jahre",
   month: "Monate",
-  week: "Wochen",
+  week: "Weeks",
 };
 
 const UNIT_WIDTH: Record<Granularity, number> = {
@@ -132,14 +132,14 @@ export function SupplierDetail({
       <div className="pointer-events-auto mb-6 flex items-end justify-between">
         <div>
           <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-            Lieferant
+            Supplier
           </div>
           <h1 className="text-2xl font-bold text-zinc-900">
             {data.supplierName}
           </h1>
           <div className="text-sm text-zinc-600">
-            {data.supplierId} · {data.country} · {data.batches.length} Lieferungen ·{" "}
-            {data.partMasters.length} Part-Typen
+            {data.supplierId} · {data.country} · {data.batches.length} deliveries ·{" "}
+            {data.partMasters.length} part types
           </div>
         </div>
         <GranularitySwitcher
@@ -411,7 +411,7 @@ function BatchPill({
     <button
       onClick={onClick}
       style={{ left: `${xPct}%` }}
-      title={`${batch.batchId} · ${formatDate(batch.receivedDate)} · ${batch.qty} Stück${
+      title={`${batch.batchId} · ${formatDate(batch.receivedDate)} · ${batch.qty} units${
         hasError ? ` · ${flagged} flagged` : ""
       }`}
       className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer transition ${

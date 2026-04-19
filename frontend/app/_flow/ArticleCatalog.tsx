@@ -111,11 +111,11 @@ export function ArticleCatalog() {
     <div className="absolute inset-0 flex flex-col p-8 pointer-events-none">
       <div className="pointer-events-auto mb-6">
         <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-          Konstruktion
+          Engineering
         </div>
         <h1 className="text-2xl font-bold text-zinc-900">Articles · Designs</h1>
         <div className="text-sm text-zinc-600">
-          {articleCatalog.length} Articles · BOM mit Baugruppen-Blumen
+          {articleCatalog.length} Articles · BOM with assembly flowers
         </div>
       </div>
 
@@ -182,7 +182,7 @@ function ArticleCard({
         </div>
         <div className="text-[11px] text-zinc-500 mt-0.5">
           {article.bomId} v{article.bomVersion} · {article.assemblies.length}{" "}
-          Baugruppen
+          assemblies
         </div>
       </div>
       {flagged > 0 && (
@@ -197,7 +197,7 @@ function ArticleCard({
 function EmptyHint() {
   return (
     <div className="absolute inset-0 flex items-center justify-center text-zinc-400 text-sm">
-      Wähle einen Artikel links.
+      Choose an article on the left.
     </div>
   );
 }

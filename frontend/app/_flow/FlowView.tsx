@@ -347,7 +347,7 @@ function Inner() {
           onClick={onBack}
           className="fixed top-20 left-6 z-30 px-3 py-2 bg-white border border-zinc-200 rounded-lg shadow-sm hover:bg-zinc-50 transition text-sm text-zinc-700 font-medium"
         >
-          ← Zurück
+          ← Back
         </button>
       )}
     </div>

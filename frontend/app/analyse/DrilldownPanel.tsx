@@ -1,5 +1,5 @@
-// Slide-in Side-Panel fuer Chart-Klicks.
-// Zeigt Label + Count + raw IDs; schliesst via X-Button oder Backdrop-Click.
+// Slide-in side panel for chart clicks.
+// Shows label + count + raw IDs; closes via X button or backdrop click.
 
 "use client";
 
@@ -53,9 +53,9 @@ export function DrilldownPanel({ selection, onClose }: Props) {
               <div>
                 <div className="flex items-center gap-2">
                   <span className={`inline-block w-2 h-2 rounded-full ${accentBg[selection.accent]}`} />
-                  <span className="text-xs font-semibold tracking-widest text-gray-400 uppercase">
-                    {selection.subtitle}
-                  </span>
+                <span className="text-xs font-semibold tracking-widest text-gray-400 uppercase">
+                  {selection.subtitle}
+                </span>
                 </div>
                 <h2 className="mt-2 text-2xl font-bold tracking-tight text-gray-950">
                   {selection.title}
@@ -64,7 +64,7 @@ export function DrilldownPanel({ selection, onClose }: Props) {
               <button
                 onClick={onClose}
                 className="text-gray-400 hover:text-gray-900 transition-colors"
-                aria-label="Schliessen"
+                aria-label="Close"
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                   <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -74,10 +74,10 @@ export function DrilldownPanel({ selection, onClose }: Props) {
 
             <div className="flex-1 overflow-y-auto px-6 py-5">
               <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-3">
-                Betroffene Defekte · {selection.items.length}
+                Affected defects · {selection.items.length}
               </p>
               {selection.items.length === 0 ? (
-                <p className="text-sm text-gray-400">Keine Einzel-IDs verfuegbar.</p>
+                <p className="text-sm text-gray-400">No individual IDs available.</p>
               ) : (
                 <ul className="space-y-1">
                   {selection.items.map((id) => (

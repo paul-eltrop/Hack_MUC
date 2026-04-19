@@ -22,6 +22,6 @@ export async function GET(req: Request) {
       },
     });
   } catch {
-    return new Response("Portal nicht erreichbar", { status: 503 });
+    return new Response("Portal unreachable", { status: 503 });
   }
 }

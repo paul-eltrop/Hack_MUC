@@ -80,20 +80,20 @@ function Header({
   focusedId,
   selectedBatchId,
 }: AgentPanelProps) {
-  let focusLine = "Kein Fokus";
+  let focusLine = "No focus";
   if (focusedKind === "supplier" && focusedId) {
     const supplier = supplierDetails[focusedId];
     if (supplier) {
       if (selectedBatchId) {
-        focusLine = `Fokus: ${selectedBatchId} · ${supplier.supplierName}`;
+        focusLine = `Focus: ${selectedBatchId} · ${supplier.supplierName}`;
       } else {
-        focusLine = `Fokus: ${supplier.supplierName}`;
+        focusLine = `Focus: ${supplier.supplierName}`;
       }
     }
   } else if (focusedKind === "factory") {
-    focusLine = "Fokus: Werk";
+    focusLine = "Focus: Werk";
   } else if (focusedKind === "field") {
-    focusLine = "Fokus: Feld";
+    focusLine = "Focus: Feld";
   }
 
   return (
@@ -116,16 +116,16 @@ function IssuesSection() {
     <section className="flex-[1] min-h-0 flex flex-col border-b border-zinc-200">
       <div className="px-5 py-3 border-b border-zinc-200 flex items-center justify-between">
         <div className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-          Offene Fehler
+          Open Issues
         </div>
         <div className="text-[11px] text-zinc-500">
-          {OPEN_ISSUES.length} priorisiert
+          {OPEN_ISSUES.length} prioritized
         </div>
       </div>
       <div className="flex-1 overflow-y-auto">
         {OPEN_ISSUES.length === 0 ? (
           <div className="p-5 text-sm text-zinc-400">
-            Keine offenen Fehler.
+            No open issues.
           </div>
         ) : (
           OPEN_ISSUES.map((issue) => (
@@ -191,7 +191,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "welcome",
     role: "assistant",
-    text: "Hallo, ich bin dein Quality Copilot. Wähle oben einen Fehler aus oder stelle mir eine Frage.",
+    text: "Hello, I am your Quality Copilot. Select an issue above or ask me a question.",
   },
 ];
 
