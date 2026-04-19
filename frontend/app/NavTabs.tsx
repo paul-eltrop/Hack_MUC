@@ -45,24 +45,33 @@ export default function NavTabs() {
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-      <div className="flex justify-center px-6">
-        <div className="flex items-center gap-1 py-3">
-          <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1">
-            {tabs.map((tab) => (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                  isActive(tab.href)
-                    ? "bg-gray-950 text-white shadow-sm"
-                    : "text-gray-400 hover:text-gray-600"
-                }`}
-              >
-                {tab.icon}
-                {tab.label}
-              </Link>
-            ))}
-          </div>
+      <div className="relative flex justify-center px-6 py-3">
+        <Link
+          href="/"
+          aria-label="Maniax Home"
+          className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center"
+        >
+          <img
+            src="/brand/maniax-wordmark-dark.svg"
+            alt="Maniax"
+            className="h-6 w-auto"
+          />
+        </Link>
+        <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1">
+          {tabs.map((tab) => (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                isActive(tab.href)
+                  ? "bg-gray-950 text-white shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </Link>
+          ))}
         </div>
       </div>
     </nav>

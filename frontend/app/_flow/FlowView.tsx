@@ -345,7 +345,7 @@ function Inner() {
       {viewMode === "sub-flow" && (
         <button
           onClick={onBack}
-          className="fixed top-20 left-6 z-30 px-3 py-2 bg-white border border-zinc-200 rounded-lg shadow-sm hover:bg-zinc-50 transition text-sm text-zinc-700 font-medium"
+          className="absolute top-4 left-4 z-30 px-3 py-2 bg-white border border-zinc-200 rounded-lg shadow-sm hover:bg-zinc-50 transition text-sm text-zinc-700 font-medium"
         >
           ← Back
         </button>
