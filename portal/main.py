@@ -704,6 +704,143 @@ def list_uploads(link_id: str):
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
 
 
+INVESTIGATION_COMPANY_ID = "manex"
+
+
+@app.post("/investigation/upload")
+async def investigation_upload(
+    investigation_id: str = Form(...),
+    file: UploadFile = File(...),
+):
+    filename = file.filename or "document"
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Dateityp nicht unterstützt: {suffix}")
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Datei ist leer")
+    if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Datei zu groß (max 30 MB)")
+
+    file_sha256 = sha256_hex(file_bytes)
+
+    existing = find_document_by_hash(INVESTIGATION_COMPANY_ID, file_sha256)
+    if existing and existing["status"] == "accepted":
+        return {
+            "ok": True,
+            "deduplicated": True,
+            "message": "Datei bereits indexiert",
+            "doc_id": existing["doc_id"],
+            "file_name": filename,
+        }
+    if existing and existing["status"] in {"quarantined", "rejected"}:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Datei wurde zuvor wegen Datenkonflikt blockiert",
+                "status": existing["status"],
+                "reason": existing["reason"],
+            },
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(file_bytes)
+        temp_path = Path(tmp.name)
+
+    try:
+        parsed_text = parse_document_with_docling(temp_path).strip()
+        if not parsed_text:
+            raise HTTPException(status_code=400, detail="Kein Text im Dokument erkannt")
+
+        doc_id = f"inv-{investigation_id}-{uuid.uuid5(uuid.NAMESPACE_DNS, file_sha256).hex[:10]}"
+        claims = extract_claims(parsed_text)
+        contradictions = detect_contradictions(
+            company_id=INVESTIGATION_COMPANY_ID,
+            doc_id=doc_id,
+            claims=claims,
+            source=filename,
+        )
+
+        if contradictions:
+            store_document_status(
+                doc_id=doc_id,
+                company_id=INVESTIGATION_COMPANY_ID,
+                link_id=investigation_id,
+                file_name=filename,
+                file_sha256=file_sha256,
+                source=filename,
+                status="quarantined",
+                reason="contradictory_claims",
+            )
+            store_contradictions(INVESTIGATION_COMPANY_ID, investigation_id, doc_id, contradictions)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "message": "Upload blockiert: Widerspruch zu bestehendem RAG-Wissen erkannt",
+                    "status": "quarantined",
+                    "doc_id": doc_id,
+                    "contradictions_found": len(contradictions),
+                    "contradictions": contradictions[:5],
+                },
+            )
+
+        index_document(
+            doc_id,
+            parsed_text,
+            {
+                "source": filename,
+                "investigation_id": investigation_id,
+                "company_id": INVESTIGATION_COMPANY_ID,
+                "file_name": filename,
+            },
+        )
+        store_claims(INVESTIGATION_COMPANY_ID, investigation_id, doc_id, filename, claims)
+        store_document_status(
+            doc_id=doc_id,
+            company_id=INVESTIGATION_COMPANY_ID,
+            link_id=investigation_id,
+            file_name=filename,
+            file_sha256=file_sha256,
+            source=filename,
+            status="accepted",
+        )
+        return {
+            "ok": True,
+            "doc_id": doc_id,
+            "chunks": len(chunk_text(parsed_text)),
+            "claims_extracted": len(claims),
+            "file_name": filename,
+        }
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+@app.post("/investigation/retrieve")
+async def investigation_retrieve(body: dict):
+    query: str = body.get("query", "")
+    investigation_id: str = body.get("investigation_id", "")
+    if not query:
+        raise HTTPException(status_code=400, detail="query fehlt")
+
+    query_vector = embed([query])[0]
+    filter_condition = Filter(
+        must=[FieldCondition(key="investigation_id", match=MatchValue(value=investigation_id))]
+    ) if investigation_id else None
+
+    results = qdrant.query_points(
+        collection_name=ACTIVE_COLLECTION,
+        query=query_vector,
+        query_filter=filter_condition,
+        limit=5,
+        with_payload=True,
+    ).points
+    return [
+        {"text": r.payload["text"], "source": r.payload.get("file_name", "unknown"), "score": r.score}
+        for r in results
+    ]
+
+
 @app.get("/")
 def root():
     return FileResponse(Path(__file__).parent / "static" / "index.html")
