@@ -1,5 +1,22 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { investigations } from "./data";
+
+type Filter = "All" | "Critical" | "Not Assigned" | "Assigned";
+
+const FILTERS: Filter[] = ["Critical", "Not Assigned", "Assigned", "All"];
+
+const NOT_ASSIGNED_STATUSES = new Set(["Action Required", "Awaiting Owner"]);
+const ASSIGNED_STATUSES = new Set(["In Progress", "Monitoring"]);
+
+function applyFilter(filter: Filter) {
+  if (filter === "Critical") return investigations.filter((i) => i.severity === "critical");
+  if (filter === "Not Assigned") return investigations.filter((i) => NOT_ASSIGNED_STATUSES.has(i.status));
+  if (filter === "Assigned") return investigations.filter((i) => ASSIGNED_STATUSES.has(i.status));
+  return investigations;
+}
 
 const severityBar: Record<string, string> = {
   critical: "bg-red-600",
@@ -18,11 +35,14 @@ const totalRisk = investigations.reduce((s, i) => s + i.risk, 0);
 const criticalCount = investigations.filter((i) => i.severity === "critical").length;
 
 export default function Home() {
+  const [filter, setFilter] = useState<Filter>("Critical");
+  const visible = applyFilter(filter);
+
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6">
 
-        <div className="pt-16 pb-10">
+        <div className="pt-12 pb-8">
           <p className="text-xs font-semibold tracking-widest text-gray-400 uppercase mb-3">
             Manex · Quality Co-Pilot
           </p>
@@ -31,7 +51,7 @@ export default function Home() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-3 gap-px bg-gray-100 rounded-2xl overflow-hidden mb-10">
+        <div className="grid grid-cols-3 gap-px bg-gray-100 rounded-2xl overflow-hidden mb-5">
           <div className="bg-white px-5 py-4">
             <p className="text-xs text-gray-400 mb-1">Open cases</p>
             <p className="text-2xl font-bold text-gray-950">{investigations.length}</p>
@@ -46,14 +66,34 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="divide-y divide-gray-100">
-          {investigations.map((inv) => (
-            <Link key={inv.id} href={`/investigations/${inv.id}`} className="py-6 flex gap-4 group block">
+        {/* Filter chips */}
+        <div style={{ height: 20 }} />
+        <div className="flex items-center gap-2 mb-1 overflow-x-auto pb-1">
+          {FILTERS.map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold transition-all duration-150 ${
+                filter === f
+                  ? "bg-gray-950 text-white"
+                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
 
+        {/* List */}
+        <div className="divide-y divide-gray-100">
+          {visible.length === 0 && (
+            <p className="py-10 text-sm text-gray-400 text-center">No investigations match this filter.</p>
+          )}
+          {visible.map((inv) => (
+            <Link key={inv.id} href={`/investigations/${inv.id}`} className="py-6 flex gap-4 group block">
               <div className="pt-1 flex-shrink-0">
                 <div className={`w-1 h-14 rounded-full ${severityBar[inv.severity]}`} />
               </div>
-
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-4 mb-1">
                   <div>
@@ -66,21 +106,18 @@ export default function Home() {
                   </div>
                   <span className="text-[11px] text-gray-400 flex-shrink-0 pt-px">{inv.age}</span>
                 </div>
-
                 <p className="text-sm text-gray-500 leading-snug mb-3">{inv.summary}</p>
-
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 text-xs text-gray-400">
                     {inv.defects > 0 && <span>{inv.defects} defects</span>}
                     {inv.claims > 0 && <span>{inv.claims} field claims</span>}
-                    <span className="font-semibold text-gray-700">€{inv.risk.toLocaleString()}</span>
+                    <span className="font-semibold text-gray-700">€{inv.risk.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</span>
                   </div>
                   <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${statusPill[inv.status]}`}>
                     {inv.status}
                   </span>
                 </div>
               </div>
-
               <div className="flex-shrink-0 flex items-center text-gray-200 group-hover:text-gray-400 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                   <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
