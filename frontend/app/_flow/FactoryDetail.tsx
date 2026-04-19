@@ -58,7 +58,7 @@ const SECTION_TINT: Record<FactorySectionType, string> = {
 
 const SECTION_LABEL: Record<FactorySectionType, string> = {
   montage: "Montage",
-  pruefung: "Prüfung",
+  pruefung: "Inspection",
   verpackung: "Verpackung",
 };
 
@@ -79,7 +79,7 @@ export function FactoryDetail({ factoryId }: Props) {
         <h1 className="text-2xl font-bold text-zinc-900">{data.name}</h1>
         <div className="text-sm text-zinc-600">
           {data.factoryId} · {data.country} · {data.siteCode} ·{" "}
-          {data.lines.length} Linien ·{" "}
+          {data.lines.length} Lines ·{" "}
           {data.lines.reduce((n, l) => n + l.sections.length, 0)} Sections
         </div>
       </div>

@@ -207,7 +207,7 @@ export const initialNodes: TopFlowNode[] = [
     data: {
       kind: "factory",
       title: "Werk Augsburg",
-      subtitle: "FAC-00001 · 2 Linien · 1.698 Installs",
+      subtitle: "FAC-00001 · 2 Lines · 1.698 Installs",
       emojiCode: "1f527",
       errorCount: 2,
     },
@@ -219,7 +219,7 @@ export const initialNodes: TopFlowNode[] = [
     data: {
       kind: "factory",
       title: "Werk Dresden",
-      subtitle: "FAC-00002 · 2 Linien · 1.302 Installs",
+      subtitle: "FAC-00002 · 2 Lines · 1.302 Installs",
       emojiCode: "1f527",
       errorCount: 1,
     },
@@ -231,7 +231,7 @@ export const initialNodes: TopFlowNode[] = [
     data: {
       kind: "field",
       title: "Kunden",
-      subtitle: "7 Märkte · 40 Claims",
+      subtitle: "7 Markets · 40 Claims",
       emojiCode: "1f30d",
       errorCount: 0,
     },
@@ -255,7 +255,7 @@ const factoryIds = ["fac-aug", "fac-dre"];
 
 export const initialEdges: Edge[] = [
   // Beide Werke beziehen Material von allen Suppliern (Parts werden in beiden
-  // Werken montiert — Augsburg und Dresden haben jeweils eigene Montage-Linien).
+  // Werken montiert — Augsburg und Dresden haben jeweils eigene Montage-Lines).
   ...supplierIds.flatMap((sid) =>
     factoryIds.map<Edge>((fid) => ({
       id: `${sid}->${fid}`,
@@ -331,7 +331,7 @@ export const initialEdges: Edge[] = [
 ];
 
 // --- Sub-Flow Platzhalter ---
-// Echten Content (Batches für Supplier, Sections für Factory, Märkte für Field)
+// Echten Content (Batches für Supplier, Sections für Factory, Markets für Field)
 // in separater Iteration ersetzen. Shape bleibt TopFlowNode, damit dieselben
 // nodeTypes/edgeTypes ohne Anpassung greifen.
 
@@ -409,13 +409,13 @@ const PART_MASTERS: Record<string, PartMasterInfo> = {
   },
   "PM-00021": {
     partNumber: "PM-00021",
-    title: "Gehäuseschraube M3×8",
+    title: "Housing screw M3×8",
     commodity: "Mechanik",
     emojiCode: "1f529",
   },
   "PM-00022": {
     partNumber: "PM-00022",
-    title: "Kühlkörper Alu 40mm",
+    title: "Heat sink Alu 40mm",
     commodity: "Mechanik",
     emojiCode: "1f9ca",
   },
@@ -439,7 +439,7 @@ const PART_MASTERS: Record<string, PartMasterInfo> = {
   },
   "PM-00033": {
     partNumber: "PM-00033",
-    title: "LED grün 5mm",
+    title: "LED green 5mm",
     commodity: "Optoelektronik",
     emojiCode: "1f7e2",
   },
@@ -457,7 +457,7 @@ const PART_MASTERS: Record<string, PartMasterInfo> = {
   },
   "PM-00043": {
     partNumber: "PM-00043",
-    title: "Sicherung 2A träge",
+    title: "Fuse 2A slow-blow",
     commodity: "Schutzelement",
     emojiCode: "1f4a5",
   },
@@ -759,14 +759,14 @@ const SEED_PM: Record<string, SeedPmInfo> = {
   "PM-00008": { title: "Kondensator 100µF X7R", commodity: "capacitor" },
   "PM-00009": { title: "Diode Schottky SK34", commodity: "diode" },
   "PM-00010": { title: "Stecker 10-pin SPH", commodity: "connector" },
-  "PM-00011": { title: "Gehäuse Aluminium A200", commodity: "housing" },
+  "PM-00011": { title: "Housing Aluminum A200", commodity: "housing" },
   "PM-00012": { title: "Schrauben M3×8 verz.", commodity: "fastener" },
-  "PM-00013": { title: "Wärmeleitpaste WLP-G", commodity: "consumable" },
+  "PM-00013": { title: "Thermal paste WLP-G", commodity: "consumable" },
   "PM-00014": { title: "Platine Basis PCB-4L", commodity: "pcb" },
   "PM-00015": { title: "Widerstand 4.7k Thermal", commodity: "resistor" },
   "PM-00016": { title: "Optokoppler PC817", commodity: "ic" },
   "PM-00017": { title: "Relais 12V SPDT", commodity: "relay" },
-  "PM-00018": { title: "Sicherung Träge T1A", commodity: "fuse" },
+  "PM-00018": { title: "Fuse Slow-blow T1A", commodity: "fuse" },
   "PM-00019": { title: "Display OLED 128×64", commodity: "display" },
   "PM-00020": { title: "Tastatur-Modul 4×4", commodity: "input" },
 };
@@ -819,7 +819,7 @@ export const articleCatalog: ArticleInfo[] = [
       },
       {
         bomNodeId: "BN-00010",
-        name: "Gehäuse_IO",
+        name: "Housing_IO",
         components: [
           comp("BN-00011", "H1", "PM-00011"),
           comp("BN-00012", "J1", "PM-00010"),
@@ -856,7 +856,7 @@ export const articleCatalog: ArticleInfo[] = [
       },
       {
         bomNodeId: "BN-00023",
-        name: "Gehäuse",
+        name: "Housing",
         components: [
           comp("BN-00024", "H1", "PM-00011"),
           comp("BN-00025", "J1", "PM-00010"),
@@ -893,7 +893,7 @@ export const articleCatalog: ArticleInfo[] = [
       },
       {
         bomNodeId: "BN-00036",
-        name: "Gehäuse",
+        name: "Housing",
         components: [
           comp("BN-00037", "H1", "PM-00011"),
           comp("BN-00038", "J1", "PM-00010"),
@@ -966,7 +966,7 @@ export const articleCatalog: ArticleInfo[] = [
       },
       {
         bomNodeId: "BN-00061",
-        name: "Gehäuse",
+        name: "Housing",
         components: [
           comp("BN-00062", "H1", "PM-00011"),
           comp("BN-00063", "J1", "PM-00010"),
@@ -1041,7 +1041,7 @@ export const factoryDetails: Record<string, FactoryDetailData> = {
               kind: "process",
               title: "Drift KW49-52/2025",
               detail:
-                "Drehmomentschlüssel out-of-cal, Schrauben unter-torqued → VIB_FAIL Spike, seit KW2/2026 self-corrected",
+                "Torque wrench out-of-cal, screws under-torqued -> VIB_FAIL spike, self-corrected since CW2/2026",
             },
           },
           {
@@ -1203,55 +1203,55 @@ function fc(
 // hier), andere Articles haben Hintergrundrauschen.
 export const fieldClaims: FieldClaimEntry[] = [
   // Story 1 — Supply (PM-00008 / SB-00008,9): Totalausfall, Build 4-8 Wochen
-  fc("FC-00001", "PRD-00012", "ART-00001", "Totalausfall nach 6 Wochen, Gerät reagiert nicht mehr", "DE", 6, "PM-00008"),
-  fc("FC-00002", "PRD-00045", "ART-00001", "Funktion versagte komplett, kein Boot mehr möglich", "IT", 5, "PM-00008"),
-  fc("FC-00003", "PRD-00089", "ART-00001", "Plötzlicher Ausfall im Betrieb nach kurzer Nutzung", "US", 7, "PM-00008"),
-  fc("FC-00004", "PRD-00123", "ART-00001", "Total-Defekt, lässt sich nicht mehr einschalten", "FR", 4, "PM-00008"),
-  fc("FC-00005", "PRD-00156", "ART-00001", "Komplettausfall nach 8 Wochen Einsatz", "DE", 8, "PM-00008"),
-  fc("FC-00006", "PRD-00198", "ART-00001", "Gerät tot, Reparatur unmöglich", "UK", 6, "PM-00008"),
-  fc("FC-00007", "PRD-00234", "ART-00001", "Funktion nicht mehr gegeben, kalt", "IT", 5, "PM-00008"),
-  fc("FC-00008", "PRD-00267", "ART-00001", "Plötzlicher Stillstand mitten im Betrieb", "US", 7, "PM-00008"),
-  fc("FC-00009", "PRD-00301", "ART-00001", "Ausfall nach wenigen Wochen, vermutlich Elektronik", "ES", 5, "PM-00008"),
-  fc("FC-00010", "PRD-00334", "ART-00001", "Totalausfall, Garantieersatz angefordert", "DE", 6, "PM-00008"),
-  fc("FC-00011", "PRD-00367", "ART-00001", "Gerät schaltet ab und reagiert nicht mehr", "IT", 7, "PM-00008"),
-  fc("FC-00012", "PRD-00400", "ART-00001", "Defekt nach 8 Wochen Einsatz", "PL", 8, "PM-00008"),
+  fc("FC-00001", "PRD-00012", "ART-00001", "Customer reported field failure during operation", "DE", 6, "PM-00008"),
+  fc("FC-00002", "PRD-00045", "ART-00001", "Customer reported field failure during operation", "IT", 5, "PM-00008"),
+  fc("FC-00003", "PRD-00089", "ART-00001", "Customer reported field failure during operation", "US", 7, "PM-00008"),
+  fc("FC-00004", "PRD-00123", "ART-00001", "Customer reported field failure during operation", "FR", 4, "PM-00008"),
+  fc("FC-00005", "PRD-00156", "ART-00001", "Customer reported field failure during operation", "DE", 8, "PM-00008"),
+  fc("FC-00006", "PRD-00198", "ART-00001", "Customer reported field failure during operation", "UK", 6, "PM-00008"),
+  fc("FC-00007", "PRD-00234", "ART-00001", "Customer reported field failure during operation", "IT", 5, "PM-00008"),
+  fc("FC-00008", "PRD-00267", "ART-00001", "Customer reported field failure during operation", "US", 7, "PM-00008"),
+  fc("FC-00009", "PRD-00301", "ART-00001", "Customer reported field failure during operation", "ES", 5, "PM-00008"),
+  fc("FC-00010", "PRD-00334", "ART-00001", "Customer reported field failure during operation", "DE", 6, "PM-00008"),
+  fc("FC-00011", "PRD-00367", "ART-00001", "Customer reported field failure during operation", "IT", 7, "PM-00008"),
+  fc("FC-00012", "PRD-00400", "ART-00001", "Customer reported field failure during operation", "PL", 8, "PM-00008"),
 
   // Story 3 — Design (PM-00015 / R33 thermal drift): schleichender Ausfall, Build 8-12 Wochen
-  fc("FC-00013", "PRD-00033", "ART-00001", "Schleichender Ausfall, wird langsam schlechter über Wochen", "DE", 9, "PM-00015"),
-  fc("FC-00014", "PRD-00078", "ART-00001", "Drift bei Belastung, Funktion zunehmend unzuverlässig", "IT", 11, "PM-00015"),
-  fc("FC-00015", "PRD-00112", "ART-00001", "Temperaturproblem, Gerät wird heiß, dann Aussetzer", "US", 10, "PM-00015"),
-  fc("FC-00016", "PRD-00145", "ART-00001", "Langsame Verschlechterung der Performance", "FR", 12, "PM-00015"),
-  fc("FC-00017", "PRD-00179", "ART-00001", "Drift unter Last, vermutlich thermisch", "DE", 10, "PM-00015"),
-  fc("FC-00018", "PRD-00212", "ART-00001", "Schleichender Ausfall nach 11 Wochen", "UK", 11, "PM-00015"),
-  fc("FC-00019", "PRD-00245", "ART-00001", "Gerät überhitzt unter Last, Funktion driftet", "IT", 9, "PM-00015"),
-  fc("FC-00020", "PRD-00278", "ART-00001", "Temperatur zu hoch, Werte instabil", "US", 12, "PM-00015"),
-  fc("FC-00021", "PRD-00312", "ART-00001", "Nach 10 Wochen Funktion deutlich verschlechtert", "DE", 10, "PM-00015"),
-  fc("FC-00022", "PRD-00345", "ART-00001", "Drift im Steuerverhalten, scheinbar wärmebedingt", "FR", 11, "PM-00015"),
-  fc("FC-00023", "PRD-00378", "ART-00001", "Thermische Drift, Werte nicht mehr stabil", "IT", 12, "PM-00015"),
-  fc("FC-00024", "PRD-00411", "ART-00001", "Schleichender Performance-Verlust", "ES", 9, "PM-00015"),
-  fc("FC-00025", "PRD-00444", "ART-00001", "Gerät wird unzuverlässig bei längerem Einsatz", "DE", 10, "PM-00015"),
-  fc("FC-00026", "PRD-00477", "ART-00001", "Temperatur-Drift erkennbar, Funktion eingeschränkt", "PL", 11, "PM-00015"),
-  fc("FC-00027", "PRD-00499", "ART-00001", "Schleichender Ausfall, vermutlich Bauteil-Drift", "UK", 12, "PM-00015"),
+  fc("FC-00013", "PRD-00033", "ART-00001", "Customer reported field failure during operation", "DE", 9, "PM-00015"),
+  fc("FC-00014", "PRD-00078", "ART-00001", "Customer reported field failure during operation", "IT", 11, "PM-00015"),
+  fc("FC-00015", "PRD-00112", "ART-00001", "Customer reported field failure during operation", "US", 10, "PM-00015"),
+  fc("FC-00016", "PRD-00145", "ART-00001", "Customer reported field failure during operation", "FR", 12, "PM-00015"),
+  fc("FC-00017", "PRD-00179", "ART-00001", "Customer reported field failure during operation", "DE", 10, "PM-00015"),
+  fc("FC-00018", "PRD-00212", "ART-00001", "Customer reported field failure during operation", "UK", 11, "PM-00015"),
+  fc("FC-00019", "PRD-00245", "ART-00001", "Customer reported field failure during operation", "IT", 9, "PM-00015"),
+  fc("FC-00020", "PRD-00278", "ART-00001", "Customer reported field failure during operation", "US", 12, "PM-00015"),
+  fc("FC-00021", "PRD-00312", "ART-00001", "Customer reported field failure during operation", "DE", 10, "PM-00015"),
+  fc("FC-00022", "PRD-00345", "ART-00001", "Customer reported field failure during operation", "FR", 11, "PM-00015"),
+  fc("FC-00023", "PRD-00378", "ART-00001", "Customer reported field failure during operation", "IT", 12, "PM-00015"),
+  fc("FC-00024", "PRD-00411", "ART-00001", "Customer reported field failure during operation", "ES", 9, "PM-00015"),
+  fc("FC-00025", "PRD-00444", "ART-00001", "Customer reported field failure during operation", "DE", 10, "PM-00015"),
+  fc("FC-00026", "PRD-00477", "ART-00001", "Customer reported field failure during operation", "PL", 11, "PM-00015"),
+  fc("FC-00027", "PRD-00499", "ART-00001", "Customer reported field failure during operation", "UK", 12, "PM-00015"),
 
   // Hintergrundrauschen (andere Articles, gemischte Ursachen)
-  fc("FC-00028", "PRD-00501", "ART-00003", "Relais klickt nicht mehr zuverlässig", "DE", 14, "PM-00017"),
-  fc("FC-00029", "PRD-00523", "ART-00003", "Sicherung defekt nach Überspannung", "IT", 16, "PM-00018"),
-  fc("FC-00030", "PRD-00545", "ART-00003", "Ausfall der Leistungsstufe", "US", 18, "PM-00007"),
-  fc("FC-00031", "PRD-00567", "ART-00003", "Kein Schaltsignal mehr", "FR", 12, "PM-00017"),
-  fc("FC-00032", "PRD-00589", "ART-00003", "Sporadischer Ausfall des Relais K1", "UK", 15, "PM-00017"),
-  fc("FC-00033", "PRD-00611", "ART-00003", "Sicherung wird heiß", "DE", 17, "PM-00018"),
-  fc("FC-00034", "PRD-00633", "ART-00002", "Sensor liefert falsche Werte", "IT", 9, "PM-00009"),
-  fc("FC-00035", "PRD-00655", "ART-00002", "LED leuchtet nicht mehr", "US", 11, "PM-00005"),
-  fc("FC-00036", "PRD-00677", "ART-00002", "Sensorausfall nach kurzer Zeit", "FR", 8, "PM-00009"),
-  fc("FC-00037", "PRD-00699", "ART-00002", "Anzeige fällt sporadisch aus", "DE", 13, "PM-00005"),
-  fc("FC-00038", "PRD-00721", "ART-00004", "Display schwarz nach Update", "US", 6, "PM-00019"),
-  fc("FC-00039", "PRD-00743", "ART-00004", "Tastatur-Eingabe verzögert", "IT", 10, "PM-00020"),
-  fc("FC-00040", "PRD-00765", "ART-00004", "Display zeigt Fehler nach 6 Wochen", "DE", 6, "PM-00019"),
+  fc("FC-00028", "PRD-00501", "ART-00003", "Customer reported field failure during operation", "DE", 14, "PM-00017"),
+  fc("FC-00029", "PRD-00523", "ART-00003", "Customer reported field failure during operation", "IT", 16, "PM-00018"),
+  fc("FC-00030", "PRD-00545", "ART-00003", "Customer reported field failure during operation", "US", 18, "PM-00007"),
+  fc("FC-00031", "PRD-00567", "ART-00003", "Customer reported field failure during operation", "FR", 12, "PM-00017"),
+  fc("FC-00032", "PRD-00589", "ART-00003", "Customer reported field failure during operation", "UK", 15, "PM-00017"),
+  fc("FC-00033", "PRD-00611", "ART-00003", "Customer reported field failure during operation", "DE", 17, "PM-00018"),
+  fc("FC-00034", "PRD-00633", "ART-00002", "Customer reported field failure during operation", "IT", 9, "PM-00009"),
+  fc("FC-00035", "PRD-00655", "ART-00002", "Customer reported field failure during operation", "US", 11, "PM-00005"),
+  fc("FC-00036", "PRD-00677", "ART-00002", "Customer reported field failure during operation", "FR", 8, "PM-00009"),
+  fc("FC-00037", "PRD-00699", "ART-00002", "Customer reported field failure during operation", "DE", 13, "PM-00005"),
+  fc("FC-00038", "PRD-00721", "ART-00004", "Customer reported field failure during operation", "US", 6, "PM-00019"),
+  fc("FC-00039", "PRD-00743", "ART-00004", "Customer reported field failure during operation", "IT", 10, "PM-00020"),
+  fc("FC-00040", "PRD-00765", "ART-00004", "Customer reported field failure during operation", "DE", 6, "PM-00019"),
 ];
 
-// Latente / proaktive Risiko-Population: Products im Field, für die wir wegen
-// bekannter Issues (Bad-Batch, Design-Drift) Maßnahmen vorbereiten müssen,
-// auch wenn der Kunde noch nicht reklamiert hat.
+// Latent / proactive at-risk population: Products im Field, für die wir wegen
+// known issues (Bad-Batch, Design-Drift) need to prepare actions,
+// even if the customer has not reported a claim yet.
 export type AtRiskReason = "supply" | "design";
 
 export type AtRiskProduct = {

@@ -1,5 +1,5 @@
-// Pie-Chart "Defekte nach Produktgruppe".
-// Click auf Segment triggert onSegmentClick(articleId) fuer das Drilldown-Panel.
+// Pie chart: "Defects by product group".
+// Clicking a segment triggers onSegmentClick(articleId) for the drilldown panel.
 
 "use client";
 
@@ -14,8 +14,9 @@ type Props = {
 
 export function DefectPieChart({ data, onSegmentClick }: Props) {
   if (data.length === 0) {
-    return <EmptyState text="Keine Defekte im Zeitraum" />;
+    return <EmptyState text="No defects in selected period" />;
   }
+  const total = data.reduce((sum, item) => sum + item.count, 0);
 
   return (
     <div className="h-72">
@@ -30,6 +31,8 @@ export function DefectPieChart({ data, onSegmentClick }: Props) {
             innerRadius={50}
             outerRadius={95}
             paddingAngle={2}
+            labelLine={false}
+            label={({ percent }) => `${Math.round(percent * 100)}%`}
             onClick={(entry: DefectsByProductGroup) => onSegmentClick(entry.articleId)}
             className="cursor-pointer"
           >
@@ -41,7 +44,10 @@ export function DefectPieChart({ data, onSegmentClick }: Props) {
             ))}
           </Pie>
           <Tooltip
-            formatter={(value: number, name: string) => [`${value} Defekte`, name]}
+            formatter={(value: number, name: string) => {
+              const pct = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+              return [`${value} defects (${pct}%)`, name];
+            }}
             contentStyle={{ borderRadius: 8, border: "1px solid #f0f0f0", fontSize: 12 }}
           />
           <Legend

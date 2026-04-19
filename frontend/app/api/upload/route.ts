@@ -19,6 +19,6 @@ export async function POST(req: Request) {
     const data = await res.json();
     return Response.json(data, { status: res.status });
   } catch {
-    return Response.json({ ok: false, error: "Portal nicht erreichbar" }, { status: 503 });
+    return Response.json({ ok: false, error: "Portal unreachable" }, { status: 503 });
   }
 }

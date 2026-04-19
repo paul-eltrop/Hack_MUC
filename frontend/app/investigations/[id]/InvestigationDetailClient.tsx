@@ -155,7 +155,7 @@ export default function InvestigationDetailClient({ inv }: { inv: Investigation 
                         <p className="text-[11px] font-semibold text-gray-400 mb-0.5">{event.date}</p>
                         <p className="text-sm text-gray-700">{event.event}</p>
                         {highlightedIdx === i && (
-                          <span className="text-[10px] font-semibold text-blue-500">AI hinzugefügt</span>
+                          <span className="text-[10px] font-semibold text-blue-500">AI added</span>
                         )}
                       </div>
                     </div>

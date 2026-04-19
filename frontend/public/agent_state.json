@@ -1,41 +1,41 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-04-19T11:10:52.274514+00:00",
+  "generatedAt": "2026-04-19T12:21:55.054123+00:00",
   "model": "claude-sonnet-4-6",
-  "runId": "RUN-95470",
-  "summary": "RUN-95470 (2026-04-19): Vier aktive Untersuchungen eröffnet. INV-001 (kritisch): ElektroParts-Batches SB-00009 (28 Defekte) und SB-00010 (5 Defekte) für PM-00008 (Kondensator 100uF X7R, BOM-Position C12/ART-00001) als „bad\" gesperrt – 14 Feldbeschwerden aus DE/FR/IT/US bestätigen thermischen Totalausfall; BOM-Flag BN-00003 „supply-issue\" gesetzt. INV-002 (high): Prozessdrift in SEC-00001 (Montage Linie 1, Augsburg) durch fehlkalibriertem Drehmomentschlüssel – 20 VIB_FAIL-Defekte KW49–52/2025, selbstkorrigiert; Section-Flag „process\" gesetzt. INV-003 (high): Designfehler R33/PM-00015 (Widerstand 4.7kΩ) in ART-00001 – 5 Feldbeschwerden (DE/ES/PL) ohne Fabrikdefekte, Thermaldrift nach 8–12 Wochen; BOM-Flag BN-00004 „design-issue\" und 5 At-Risk-Produkte (PRD-00039/082/083/084/162) registriert. INV-004 (low): Bediener user_042 verursachte 15 kosmetische Defekte (LABEL_MISALIGN/VISUAL_SCRATCH) in PO-00012/18/24 – Operator-Flag in SEC-00001 gesetzt. Lieferanten-Badges: sup-01 4 Fehler, sup-02 1, sup-03 2, sup-04 1; fac-aug 2 Flags; fac-dre 0; field 2; articles 2. Gesamt 15 Batches bewertet (6× bad, 7× suspect, 2× ok).",
+  "runId": "RUN-95473",
+  "summary": null,
   "nodes": {
     "sup-01": {
-      "errorCount": 4,
-      "subtitle": "4 fehlerhafte Batches – SB-00006/07/09 kritisch (PM-00006/07/08)"
+      "errorCount": 5,
+      "subtitle": "5 Chargen auffällig – SB-00006/07/08/09/10 (PM-00006/07/08) kritisch"
     },
     "sup-02": {
       "errorCount": 1,
-      "subtitle": "1 fehlerhafter Batch – SB-00002 (PM-00002, 37 Defekte)"
+      "subtitle": "SB-00002 bad – PM-00002 Kondensator 47uF, 37 Defekte"
     },
     "sup-03": {
       "errorCount": 2,
-      "subtitle": "2 fehlerhafte Batches – SB-00017 (PM-00015, 34 Defekte), SB-00018 (PM-00016)"
+      "subtitle": "SB-00017 bad – PM-00015 Widerstand 4.7kΩ, 34 Defekte; SB-00018/03 suspect"
     },
     "sup-04": {
-      "errorCount": 1,
-      "subtitle": "1 fehlerhafter Batch – SB-00011 (PM-00009, 39 Defekte)"
+      "errorCount": 2,
+      "subtitle": "SB-00011 bad (39 Defekte, PM-00009) | SB-00005/20 suspect"
     },
     "fac-aug": {
       "errorCount": 2,
-      "subtitle": "SEC-00001: Prozessdrift (Drehmomentschlüssel, selbstkorrigiert) + Operator user_042"
+      "subtitle": "SEC-00001: Prozessdrift VIB_FAIL (selbstkorr.) + Operator user_042 kosmetisch"
     },
     "fac-dre": {
       "errorCount": 0,
       "subtitle": "Keine aktiven Flags"
     },
     "field": {
-      "errorCount": 2,
-      "subtitle": "14× C12-Kapazitor (PM-00008) + 5× R33-Thermaldrift (PM-00015) – DE/FR/IT/US/ES/PL"
+      "errorCount": 4,
+      "subtitle": "14× C12/PM-00008 | 5× R33/PM-00015 Thermodrift | 4 Untersuchungen aktiv"
     },
     "articles": {
       "errorCount": 2,
-      "subtitle": "ART-00001: BN-00003 supply-issue (PM-00008), BN-00004 design-issue (PM-00015)"
+      "subtitle": "ART-00001: BN-00003 supply-issue (C12/PM-00008) | BN-00004 design-issue (R33/PM-00015)"
     }
   },
   "supplierDetails": {
@@ -123,7 +123,7 @@
           "partTitle": "Kondensator 100uF X7R",
           "receivedDate": "2025-11-10",
           "qty": 800,
-          "status": "ok",
+          "status": "bad",
           "events": 1
         },
         {
@@ -143,7 +143,7 @@
           "partTitle": "Kondensator 100uF X7R",
           "receivedDate": "2026-03-01",
           "qty": 400,
-          "status": "suspect",
+          "status": "bad",
           "events": 5
         }
       ]
@@ -400,7 +400,7 @@
           "partTitle": "Tastatur-Modul 4x4",
           "receivedDate": "2025-11-18",
           "qty": 200,
-          "status": "ok",
+          "status": "suspect",
           "events": 1
         },
         {
@@ -437,8 +437,8 @@
               "testCount": 0,
               "caseFlag": {
                 "kind": "operator",
-                "title": "Bediener user_042 – kosmetische Defekte (LABEL_MISALIGN, VISUAL_SCRATCH)",
-                "detail": "Bediener user_042 verursachte in PO-00012, PO-00018, PO-00024 insgesamt 15 kosmetische Defekte (8× LABEL_MISALIGN, 4× VISUAL_SCRATCH). Höchste Aktivität in SEC-00001 (54 Installationen). Kein Sicherheitsrisiko – kosmetische Abweichungen."
+                "title": "Operator user_042: 15 kosmetische Defekte in PO-00012/18/24",
+                "detail": "Operator user_042 verursachte 15 kosmetische Defekte (LABEL_MISALIGN: 11, VISUAL_SCRATCH: 4) in Fertigungsaufträgen PO-00012, PO-00018 und PO-00024 – hauptsächlich in SEC-00001 (54 Installationen). Schulungsmaßnahme empfohlen."
               }
             },
             {
@@ -471,7 +471,11 @@
               "sectionType": "montage",
               "sequenceNo": 1,
               "testCount": 0,
-              "caseFlag": null
+              "caseFlag": {
+                "kind": "operator",
+                "title": "Bediener user_042 – Kosmetische Defekte (LABEL_MISALIGN / VISUAL_SCRATCH)",
+                "detail": "user_042 verursachte in PO-00012 (5 Defekte), PO-00018 (5 Defekte) und PO-00024 (5 Defekte) insgesamt 15 kosmetische Defekte (LABEL_MISALIGN + VISUAL_SCRATCH). Hauptaktivität in SEC-00004 (48 Installationen). Schulung / Einweisung empfohlen."
+              }
             },
             {
               "sectionId": "SEC-00005",
@@ -1511,7 +1515,7 @@
       "productId": "PRD-00039",
       "articleId": "ART-00001",
       "reason": "design",
-      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00015 (DE).",
+      "reasonDetail": "R33 (PM-00015, 4,7k Thermal) Thermodrift – Feldbeschwerde FC-00015 nach 70 Tagen (DE). Design-issue BN-00004.",
       "buildAgeWeeks": 15,
       "market": "DE"
     },
@@ -1519,15 +1523,15 @@
       "productId": "PRD-00082",
       "articleId": "ART-00001",
       "reason": "design",
-      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00038 (DE).",
-      "buildAgeWeeks": 20,
+      "reasonDetail": "R33/PM-00015 (Widerstand 4.7kΩ, BN-00004) Thermaldrift nach 8–12 Wochen. Produkt im kritischen Altersfenster – proaktive Kundeninformation empfohlen.",
+      "buildAgeWeeks": 10,
       "market": "DE"
     },
     {
       "productId": "PRD-00083",
       "articleId": "ART-00001",
       "reason": "design",
-      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00017 (ES).",
+      "reasonDetail": "R33 (PM-00015, 4,7k Thermal) Thermodrift – Feldbeschwerde FC-00017 nach 56 Tagen (ES). Design-issue BN-00004.",
       "buildAgeWeeks": 11,
       "market": "ES"
     },
@@ -1535,7 +1539,7 @@
       "productId": "PRD-00084",
       "articleId": "ART-00001",
       "reason": "design",
-      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00016 (PL).",
+      "reasonDetail": "R33 (PM-00015, 4,7k Thermal) Thermodrift – Feldbeschwerde FC-00016 nach 63 Tagen (PL). Design-issue BN-00004.",
       "buildAgeWeeks": 18,
       "market": "PL"
     },
@@ -1543,64 +1547,88 @@
       "productId": "PRD-00162",
       "articleId": "ART-00001",
       "reason": "design",
-      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00013 (DE).",
+      "reasonDetail": "R33 (PM-00015, 4,7k Thermal) Thermodrift – Feldbeschwerde FC-00013 nach 56 Tagen (DE). Design-issue BN-00004.",
       "buildAgeWeeks": 11,
       "market": "DE"
+    },
+    {
+      "productId": "PRD-00146",
+      "articleId": "ART-00001",
+      "reason": "supply",
+      "reasonDetail": "PM-00008/C12 Lieferantendefekt (ElektroParts SB-00009) – Build-Datum im Risikobereich; Latente Population ohne Feldklaim aber im kritischen Altersfenster",
+      "buildAgeWeeks": 10,
+      "market": "US"
+    },
+    {
+      "productId": "PRD-00009",
+      "articleId": "ART-00001",
+      "reason": "supply",
+      "reasonDetail": "Kondensator C12 (PM-00008, 100uF X7R) aus ElektroParts-Charge SB-00009 – Feldbeschwerde FC-00004 (C12 verbrannt, 49 Tage nach Bau, US).",
+      "buildAgeWeeks": 10,
+      "market": "US"
+    },
+    {
+      "productId": "PRD-00013",
+      "articleId": "ART-00001",
+      "reason": "supply",
+      "reasonDetail": "Kondensator C12 (PM-00008, 100uF X7R) aus ElektroParts-Charge SB-00009 – Feldbeschwerde FC-00012 (C12 versagt nach Thermozyklus, 49 Tage, US).",
+      "buildAgeWeeks": 10,
+      "market": "US"
     }
   ],
   "investigations": [
     {
       "id": "INV-001",
       "severity": "critical",
-      "title": "Lieferantendefekt: ElektroParts Kondensator 100uF X7R (PM-00008) – Kalte Lötstellen / Thermischer Ausfall",
-      "source": "Lieferant / Feldrückmeldungen",
-      "summary": "Batches SB-00009 (28 Defekte) und SB-00010 (5 Defekte) des ElektroParts-Kondensators 100uF X7R (PM-00008, BOM-Position C12, ART-00001) zeigen eine kritische Fehlerrate. 14 Feldbeschwerden bestätigen Totalausfälle nach thermischen Zyklen (typisch 21–56 Tage nach Inbetriebnahme) in den Märkten DE, FR, IT, US. Kunden berichten übereinstimmend von verbrannten oder offenen C12-Kondensatoren. Sofortige Sperrung des Lieferantenbatches und Feldrückruf der betroffenen Produkte empfohlen.",
-      "defects": 33,
+      "title": "Feldausfälle MC-200: Kondensator 100uF X7R (C12) – ElektroParts-Chargen SB-00008/09/10",
+      "source": "Feldbeschwerden + Fabrikdefekte",
+      "summary": "Chargen SB-00009 (28 Defekte), SB-00010 (5 Defekte) und SB-00008 (1 Defekt) des Lieferanten ElektroParts GmbH für Bauteil PM-00008 (Kondensator 100uF X7R, Referenz C12) sind mit SOLDER_COLD-Defekten belastet. 14 Feldbeschwerden aus DE, FR, IT, US berichten von Totalausfall nach 21–56 Tagen, konsistent auf C12-Kapazitätsversagen nach Thermozyklen. 25 betroffene Produkte in SB-00009, gesamt 36 über alle drei Chargen. BOM-Komponente BN-00003/ART-00001 als supply-issue markiert.",
+      "defects": 34,
       "claims": 14,
-      "risk": 0.95,
-      "status": "Offen – Eskalation erforderlich",
+      "risk": 0.92,
+      "status": "Offen – Lieferantensperre prüfen",
       "age": "12 Wochen",
-      "rootCause": "Fehlerhafter Lieferantenbatch (SB-00009, SB-00010) von ElektroParts GmbH: Kondensator 100uF X7R (PM-00008) versagt unter thermischer Belastung (Lötstellen-Kaltverbindung / Materialfehler). BOM-Position C12 in ART-00001 betroffen.",
+      "rootCause": "Defekte Kondensatoren 100uF X7R (PM-00008) aus ElektroParts-Chargen SB-00008/09/10 – Kaltlötstellen (SOLDER_COLD) führen zu Kapazitätsverlust und Totalausfall unter Thermostress",
       "timeline": [
         {
-          "date": "2025-10-28",
-          "event": "Erste Defekte mit PM-00008 (SB-00010) registriert",
+          "date": "2025-11-20",
+          "event": "Erste Defektmeldung SB-00008 (1 Defekt, PRD-00076)",
           "type": "defect"
         },
         {
           "date": "2026-01-26",
-          "event": "Spike: SB-00009 – 28 Defekte in 25 Produkten (KW04–KW07)",
+          "event": "Defektanstieg SB-00009: 28 Defekte in 25 Produkten",
           "type": "defect"
         },
         {
           "date": "2026-02-01",
-          "event": "Erste Feldbeschwerde FC-00021: fehlende Teile, C12 verdächtigt (US)",
+          "event": "Erste Feldbeschwerde FC-00021 (PRD-00141, US)",
           "type": "claim"
         },
         {
           "date": "2026-02-28",
-          "event": "FC-00008: C12 (100uF) Leerkreis bestätigt – 5. Einheit diesen Monat (FR)",
+          "event": "FC-00008: C12 open-circuit bestätigt – 5. Einheit diesen Monat",
           "type": "claim"
         },
         {
           "date": "2026-03-04",
-          "event": "FC-00009: 4 Einheiten nach Thermozyklus ausgefallen, ElektroParts-Batch verdächtig (FR)",
+          "event": "FC-00009: 4 Einheiten nach Thermozyklus ausgefallen (FR)",
           "type": "claim"
         },
         {
-          "date": "2026-03-17",
-          "event": "FC-00001/FC-00011: Mehrfachausfälle DE/FR – formale Ursachenanalyse gefordert",
-          "type": "claim"
+          "date": "2026-03-11",
+          "event": "FC-00003/FC-00007: Muster bestätigt, Chargen unter Verdacht",
+          "type": "detection"
         },
         {
           "date": "2026-04-03",
-          "event": "FC-00004/FC-00012: C12 verschmort – RMA-Prozess angefordert (US)",
+          "event": "FC-00004/FC-00012: C12 verbrannt, RMA-Anfragen (US)",
           "type": "claim"
         },
         {
           "date": "2026-04-19",
-          "event": "Automatische Erkennung durch Quality Co-Pilot – Batch SB-00009/SB-00010 gesperrt",
-          "type": "detection"
+          "event": "Qualitäts-Co-Pilot: Chargen als bad markiert, Untersuchung eröffnet",
+          "type": "action"
         }
       ],
       "affectedProducts": [
@@ -1654,26 +1682,25 @@
         }
       ],
       "suggestedActions": [
-        "Sofortige Sperrung und Quarantäne aller Bestände aus Batches SB-00009 und SB-00010 (ElektroParts PM-00008)",
-        "Feldrückruf aller ART-00001-Geräte aus betroffenen Produktions-KW (KW04–KW07/2026)",
-        "Lieferanten-Audit bei ElektroParts GmbH einleiten – Fokus auf Lötprozess und Materialzertifikate",
-        "Alternativlieferanten für PM-00008 (100uF X7R) qualifizieren",
-        "Formale 8D-Analyse mit ElektroParts anfordern",
-        "Kundenkommunikation vorbereiten: DE, FR, IT, US-Märkte informieren"
+        "Sofortiger Lieferstopp für ElektroParts PM-00008 aus Chargen SB-00008, SB-00009, SB-00010",
+        "Alle betroffenen Produkte (PRD-00001 bis PRD-00030, PRD-00048, PRD-00076, PRD-00078, PRD-00099, PRD-00169) auf Feldrückruf prüfen",
+        "Ersatzbeschaffung PM-00008 bei alternativem Lieferanten einleiten",
+        "Formelle 8D-Analyse mit ElektroParts GmbH anstoßen – Fokus SOLDER_COLD-Ursache",
+        "Alle noch auf Lager befindlichen Einheiten aus SB-00009 sperren und 100%-Prüfung anordnen"
       ]
     },
     {
       "id": "INV-002",
       "severity": "high",
-      "title": "Prozessdrift: Drehmomentschlüssel SEC-00001 (Montage Linie 1) – VIB_FAIL-Spike KW49–52/2025 (selbstkorrigiert)",
-      "source": "Fertigungsdefekte / Sektionsanalyse",
-      "summary": "In Sektion SEC-00001 (Montage Linie 1, fac-aug) wurde in KW49–52/2025 ein VIB_FAIL-Spike festgestellt: KW49 4 Defekte, KW50 6 Defekte, KW51 4 Defekte, KW52 6 Defekte – insgesamt 20 Defekte in 4 Wochen. Ursache ist ein fehlkalibrierter Drehmomentschlüssel. Keine aktuellen Defekte vorhanden – der Prozess hat sich selbst korrigiert. Nachkalibrierung und präventive Kalibrierprüfung aller Werkzeuge empfohlen.",
+      "title": "Prozessdrift Montage Linie 1 (SEC-00001): VIB_FAIL-Spike KW49–52/2025 – Drehmomentschlüssel",
+      "source": "Fabrikdefekte SEC-00001",
+      "summary": "Sektion SEC-00001 (Montage Linie 1, fac-aug) zeigte in KW49–52/2025 einen Anstieg von VIB_FAIL-Defekten: 4 (KW49), 6 (KW50), 4 (KW51), 6 (KW52) – insgesamt 20 Defekte. Ursache: vermutlich falsch kalibrierter Drehmomentschlüssel. Der Spike ist seit Ende 2025 nicht mehr beobachtet worden und gilt als selbstkorrigiert. Kalibriernachweis und Korrekturmaßnahme sind noch zu dokumentieren.",
       "defects": 20,
       "claims": 0,
       "risk": 0.35,
-      "status": "Selbstkorrigiert – Überwachung aktiv",
-      "age": "19 Wochen",
-      "rootCause": "Fehlkalibrierter Drehmomentschlüssel in SEC-00001 (Montage Linie 1, Augsburg). Spike in KW49–52/2025 mit 20 VIB_FAIL-Defekten. Kein Nachweis aktueller Defekte – Prozessdrift selbstkorrigiert.",
+      "status": "Selbstkorrigiert – Dokumentation ausstehend",
+      "age": "20 Wochen",
+      "rootCause": "Prozessdrift in SEC-00001 (Montage Linie 1): Drehmomentschlüssel außerhalb Kalibriertoleranz führte zu VIB_FAIL-Defekten in KW49–52/2025 (gesamt 20 Defekte). Seit KW01/2026 keine weiteren Defekte – wahrscheinlich selbstkorrigiert",
       "timeline": [
         {
           "date": "2025-12-01",
@@ -1682,161 +1709,412 @@
         },
         {
           "date": "2025-12-08",
-          "event": "KW50: 6 VIB_FAIL-Defekte – Spike-Höhepunkt",
+          "event": "KW50: 6 VIB_FAIL-Defekte – Anstieg bestätigt",
           "type": "defect"
         },
         {
           "date": "2025-12-15",
-          "event": "KW51: 4 VIB_FAIL-Defekte – anhaltend erhöht",
+          "event": "KW51: 4 VIB_FAIL-Defekte",
           "type": "defect"
         },
         {
           "date": "2025-12-22",
-          "event": "KW52: 6 VIB_FAIL-Defekte – letzter Spike-Eintrag",
+          "event": "KW52: 6 VIB_FAIL-Defekte – Spike-Muster vollständig",
           "type": "defect"
         },
         {
-          "date": "2026-04-19",
-          "event": "Automatische Erkennung – keine aktuellen Defekte, Selbstkorrektur bestätigt",
+          "date": "2026-01-01",
+          "event": "Keine weiteren VIB_FAIL-Defekte in SEC-00001 – Spike selbstkorrigiert",
           "type": "detection"
-        }
-      ],
-      "affectedProducts": [
+        },
         {
-          "id": "fac-aug/SEC-00001",
-          "name": "Montage Linie 1 – Augsburg (SEC-00001)"
+          "date": "2026-04-19",
+          "event": "Qualitäts-Co-Pilot: Prozess-Flag gesetzt, Kalibriernachweis angefordert",
+          "type": "action"
         }
       ],
+      "affectedProducts": [],
       "suggestedActions": [
-        "Nachkalibrierung aller Drehmomentschlüssel in SEC-00001 dokumentieren und bestätigen",
-        "Präventiven Kalibrierplan für alle Linie-1-Werkzeuge (fac-aug) einführen (monatlich)",
-        "VIB_FAIL-Rate in SEC-00001 weiterhin wöchentlich überwachen",
-        "Betroffene Chargen aus KW49–52/2025 auf latente Vibrationsschäden prüfen"
+        "Kalibrierprotokoll des Drehmomentschlüssels für KW49–52/2025 rückwirkend prüfen und dokumentieren",
+        "Nachkalibrierung aller Drehmomentschlüssel in SEC-00001 mit Prüfnachweis bestätigen",
+        "Präventiv: wöchentliche Kalibrierprüfung für Drehmomentschlüssel auf Linie 1 einführen",
+        "Betroffene Produkte aus KW49–52/2025 auf VIB_FAIL-Risiko stichprobenartig prüfen"
       ]
     },
     {
       "id": "INV-003",
       "severity": "high",
-      "title": "Design-Fehler: Thermischer Drift R33 (PM-00015, Widerstand 4.7k) – Feldbeschwerden ART-00001",
-      "source": "Feldrückmeldungen / Keine Werksdefekte",
-      "summary": "5 Feldbeschwerden (FC-00013, FC-00015, FC-00016, FC-00017, FC-00038) berichten übereinstimmend von thermischem Drift des R33-Widerstands (PM-00015, 4.7kΩ) in ART-00001-Geräten nach 56–70 Tagen Betrieb. Keine entsprechenden Fabrikdefekte nachgewiesen – klassisches Design-Signaturmuster. Betroffene Märkte: DE, ES, PL. Lieferant TechSupply Europe (Batch SB-00017, 34 Defekte). BOM-Position BN-00004 in ART-00001 als Design-Issue markiert. Latente Feldbevölkerung im 8–12-Wochen-Alterfenster identifiziert.",
+      "title": "Designfehler ART-00001: R33-Widerstand PM-00015 (4,7k Thermal) – Thermodrift im Feld",
+      "source": "Feldbeschwerden – kein Fabrikbefund",
+      "summary": "5 Feldbeschwerden (FC-00016, FC-00015, FC-00017, FC-00013 + weitere) zu ART-00001 berichten von Instabilität und Leistungsabfall nach 56–70 Tagen, konsistent auf R33 (PM-00015, Widerstand 4,7k Thermal) zurückgeführt. Es existieren keine entsprechenden Fabrikdefekte – klares Designproblem. Betroffene Märkte: DE, PL, ES. Build-Alter bei Beschwerde: 56–70 Tage (8–10 Wochen). BOM-Komponente BN-00004/ART-00001 als design-issue markiert. Latente Population in der 8–12-Wochen-Altersgruppe proaktiv gefährdet.",
       "defects": 0,
       "claims": 5,
-      "risk": 0.72,
-      "status": "Offen – Designüberprüfung erforderlich",
-      "age": "10 Wochen",
-      "rootCause": "Designfehler: R33 (PM-00015, Widerstand 4.7kΩ Thermal, BN-00004/ART-00001) zeigt unzureichende Temperaturstabilität (thermischer Drift). Keine Fabrikdetektion möglich – Fehler manifestiert sich erst nach 8–12 Wochen Feldbetrieb unter thermischer Last.",
+      "risk": 0.7,
+      "status": "Offen – Designüberprüfung läuft",
+      "age": "9 Wochen",
+      "rootCause": "Designproblem: R33 (PM-00015, Widerstand 4,7k Thermal) in ART-00001 zeigt unzureichende Thermostabilität. Nach 8–10 Wochen Feldbetrieb führt Thermodrift zu Instabilität und Leistungsabfall – ohne Fabrikdetektierbarkeit (kein Fabrikdefekt registriert)",
       "timeline": [
         {
           "date": "2026-02-15",
-          "event": "FC-00016: Thermischer Drift R33 – Instabilität nach 2 Monaten (PL)",
+          "event": "FC-00016: Erste Beschwerde R33-Thermodrift (PL, PRD-00084, 63 Tage nach Bau)",
           "type": "claim"
         },
         {
           "date": "2026-03-12",
-          "event": "FC-00015: Präzisionsverlust nach 3 Monaten, R33 verdächtig (DE)",
+          "event": "FC-00015: Leistungsabfall nach 3 Monaten (DE, PRD-00039)",
           "type": "claim"
         },
         {
           "date": "2026-03-26",
-          "event": "FC-00017: Intermittente Instabilität nach 8 Wochen, R33 Thermaldrift (ES)",
+          "event": "FC-00017: Instabilität nach 8 Wochen (ES, PRD-00083)",
           "type": "claim"
         },
         {
           "date": "2026-03-31",
-          "event": "FC-00013: Kalibrierungsverlust nach 2–3 Monaten, R33 bei höheren Temperaturen (DE)",
+          "event": "FC-00013: Kalibrierungsverlust nach 2–3 Monaten (DE, PRD-00162)",
           "type": "claim"
         },
         {
           "date": "2026-04-19",
-          "event": "Automatische Erkennung – Design-Issue BN-00004 markiert, At-Risk-Produkte identifiziert",
-          "type": "detection"
+          "event": "Qualitäts-Co-Pilot: Design-Flag BN-00004 gesetzt, Gefährdungsprodukte identifiziert",
+          "type": "action"
         }
       ],
       "affectedProducts": [
         {
-          "id": "PRD-00039",
-          "name": "PRD-00039 (DE)"
+          "id": "PRD-00084",
+          "name": "PRD-00084"
         },
         {
-          "id": "PRD-00082",
-          "name": "PRD-00082 (DE)"
+          "id": "PRD-00039",
+          "name": "PRD-00039"
         },
         {
           "id": "PRD-00083",
-          "name": "PRD-00083 (ES)"
-        },
-        {
-          "id": "PRD-00084",
-          "name": "PRD-00084 (PL)"
+          "name": "PRD-00083"
         },
         {
           "id": "PRD-00162",
-          "name": "PRD-00162 (DE)"
+          "name": "PRD-00162"
         }
       ],
       "suggestedActions": [
-        "R33 (PM-00015) durch Präzisionswiderstand mit besserem Temperaturkoeffizient (≤50 ppm/°C) ersetzen – Designrevision einleiten",
-        "Proaktive Kundenbenachrichtigung für alle ART-00001-Geräte im 8–12-Wochen-Altersfenster (Märkte DE, ES, PL)",
-        "Feldaustausch-Programm für betroffene Seriennummern vorbereiten",
-        "TechSupply-Batch SB-00017 für neue Verbauungen sperren bis Designfreigabe",
-        "Thermische Qualifikationstests für Nachfolge-Widerstand durchführen"
+        "R33 (PM-00015) durch hochpräzisen Widerstand mit niedrigem Temperaturkoeffizient (≤25ppm/°C) ersetzen – Design-ECO einleiten",
+        "Alle ART-00001-Einheiten im Feldalter 8–12 Wochen proaktiv kontaktieren und Tausch anbieten",
+        "Thermische Qualifikationstests für PM-00015 nachfordern – Lieferant TechSupply Europe einbinden",
+        "Screening-Test bei Fertigung bis zur Design-Korrektur: Thermozyklus für ART-00001 ergänzen",
+        "Feldbericht an TechSupply Europe (SB-00017, 34 Defekte) zur Qualitätsbewertung senden"
       ]
     },
     {
       "id": "INV-004",
       "severity": "low",
-      "title": "Bediener user_042 – Kosmetische Defekte (LABEL_MISALIGN, VISUAL_SCRATCH) in PO-00012/18/24",
-      "source": "Fertigungsdefekte / Bedieneranalyse",
-      "summary": "Bediener user_042 erzeugte in den Aufträgen PO-00012, PO-00018 und PO-00024 insgesamt 15 kosmetische Defekte: 11× LABEL_MISALIGN, 4× VISUAL_SCRATCH. Höchste Aktivität in SEC-00001 (54 Installationen). Kein Sicherheits- oder Funktionsrisiko. Schulung/Nachweisung des Bedieners empfohlen.",
+      "title": "Kosmetische Defekte Operator user_042: LABEL_MISALIGN / VISUAL_SCRATCH (PO-00012/18/24)",
+      "source": "Fabrikdefekte – Operatoranalyse SEC-00001",
+      "summary": "Operator user_042 verursachte in drei Fertigungsaufträgen (PO-00012, PO-00018, PO-00024) insgesamt 15 kosmetische Defekte: 11× LABEL_MISALIGN und 4× VISUAL_SCRATCH. Der Hauptarbeitsbereich ist SEC-00001 (Montage Linie 1, fac-aug, 54 Installationen). Kein funktionaler Einfluss; keine Feldbeschwerden. Schulungsbedarf identifiziert. Zum Vergleich: user_017 verursachte lediglich 1 Defekt (LABEL_MISALIGN, PO-00023).",
       "defects": 15,
       "claims": 0,
       "risk": 0.1,
-      "status": "Offen – Coaching-Maßnahme",
-      "age": "Laufend",
-      "rootCause": "Bediener user_042 zeigt überdurchschnittliche kosmetische Fehlerrate (LABEL_MISALIGN, VISUAL_SCRATCH) in Sektion SEC-00001 (Montage Linie 1). Ursache: fehlerhafte Handhabungstechnik beim Etikettieren und Montieren.",
+      "status": "Offen – Schulungsmaßnahme ausstehend",
+      "age": "4 Wochen",
+      "rootCause": "Operatorfehler user_042 in SEC-00001 (Montage Linie 1): 11 LABEL_MISALIGN- und 4 VISUAL_SCRATCH-Defekte über PO-00012/18/24 – kosmetisch, kein Sicherheitsrisiko",
       "timeline": [
         {
-          "date": "2026-04-19",
+          "date": "2026-03-01",
           "event": "PO-00012: 4× LABEL_MISALIGN, 1× VISUAL_SCRATCH durch user_042",
           "type": "defect"
         },
         {
-          "date": "2026-04-19",
+          "date": "2026-03-15",
           "event": "PO-00018: 4× LABEL_MISALIGN, 1× VISUAL_SCRATCH durch user_042",
           "type": "defect"
         },
         {
-          "date": "2026-04-19",
+          "date": "2026-03-29",
           "event": "PO-00024: 3× LABEL_MISALIGN, 2× VISUAL_SCRATCH durch user_042",
           "type": "defect"
         },
         {
           "date": "2026-04-19",
-          "event": "Automatische Erkennung – Operator-Flag SEC-00001 gesetzt",
+          "event": "Qualitäts-Co-Pilot: Operatormuster erkannt, SEC-00001 markiert, Schulung empfohlen",
           "type": "detection"
         }
       ],
       "affectedProducts": [
         {
           "id": "PO-00012",
-          "name": "Auftrag PO-00012"
+          "name": "PO-00012"
         },
         {
           "id": "PO-00018",
-          "name": "Auftrag PO-00018"
+          "name": "PO-00018"
         },
         {
           "id": "PO-00024",
-          "name": "Auftrag PO-00024"
+          "name": "PO-00024"
         }
       ],
       "suggestedActions": [
-        "Coaching-Gespräch mit user_042 – Etikettier- und Montagetechnik überprüfen",
-        "Nachschulung an Etikettierstation und Sichtprüfung durchführen",
-        "Fehlerrate user_042 für 4 Wochen engmaschig überwachen",
-        "Betroffene Einheiten aus PO-00012/18/24 auf Endkundentauglichkeit prüfen (kosmetische Abnahme)"
+        "Einzelgespräch mit Operator user_042 – Schwerpunkt korrekte Etikettierung und kratzervermeidende Handhabung",
+        "Nachschulung user_042: Visuelle Qualitätsstandards Montage Linie 1",
+        "Vergleich mit user_017 als Best-Practice-Referenz (nur 1 Defekt)",
+        "Kurzfristige Stichprobenprüfung aller von user_042 bearbeiteten Einheiten in PO-00012/18/24"
       ]
     }
-  ]
+  ],
+  "analytics": {
+    "kpis": {
+      "timeSavedHours": 25.6,
+      "moneySavedEur": 47045,
+      "topDefects": [
+        {
+          "code": "SOLDER_COLD",
+          "count": 35,
+          "severity": "medium"
+        },
+        {
+          "code": "LABEL_MISALIGN",
+          "count": 11,
+          "severity": "medium"
+        },
+        {
+          "code": "VISUAL_CRACK",
+          "count": 10,
+          "severity": "medium"
+        },
+        {
+          "code": "TEST_OOL",
+          "count": 6,
+          "severity": "medium"
+        },
+        {
+          "code": "VISUAL_SCRATCH",
+          "count": 5,
+          "severity": "medium"
+        },
+        {
+          "code": "POLARITY",
+          "count": 3,
+          "severity": "medium"
+        },
+        {
+          "code": "COLD_JOINT",
+          "count": 3,
+          "severity": "high"
+        },
+        {
+          "code": "THERMAL_DRIFT",
+          "count": 2,
+          "severity": "medium"
+        },
+        {
+          "code": "DIM_OOL",
+          "count": 2,
+          "severity": "medium"
+        },
+        {
+          "code": "MISSING_PART",
+          "count": 2,
+          "severity": "low"
+        }
+      ],
+      "avgResolutionHours": 24.8,
+      "issuesLast30Days": 19,
+      "preventedClaims": 30,
+      "narrative": null
+    },
+    "charts": {
+      "defectsByProductGroup": [
+        {
+          "articleId": "ART-00001",
+          "name": "Motor Controller MC-200",
+          "count": 56,
+          "defects": [
+            "DEF-00001",
+            "DEF-00002",
+            "DEF-00003",
+            "DEF-00004",
+            "DEF-00005",
+            "DEF-00006",
+            "DEF-00007",
+            "DEF-00008",
+            "DEF-00009",
+            "DEF-00010",
+            "DEF-00011",
+            "DEF-00012",
+            "DEF-00013",
+            "DEF-00014",
+            "DEF-00015",
+            "DEF-00016",
+            "DEF-00017",
+            "DEF-00018",
+            "DEF-00019",
+            "DEF-00020"
+          ]
+        },
+        {
+          "articleId": "ART-00003",
+          "name": "Power Distribution PD-300",
+          "count": 10,
+          "defects": [
+            "DEF-00073",
+            "DEF-00091",
+            "DEF-00097",
+            "DEF-00101",
+            "DEF-00107",
+            "DEF-00116",
+            "DEF-00117",
+            "DEF-00128",
+            "DEF-00132",
+            "DEF-00138"
+          ]
+        },
+        {
+          "articleId": "ART-00004",
+          "name": "Controller Board CB-150",
+          "count": 8,
+          "defects": [
+            "DEF-00071",
+            "DEF-00076",
+            "DEF-00104",
+            "DEF-00109",
+            "DEF-00126",
+            "DEF-00135",
+            "DEF-00139",
+            "DEF-00149"
+          ]
+        },
+        {
+          "articleId": "ART-00002",
+          "name": "Sensor Unit SU-100",
+          "count": 4,
+          "defects": [
+            "DEF-00087",
+            "DEF-00129",
+            "DEF-00134",
+            "DEF-00140"
+          ]
+        },
+        {
+          "articleId": "ART-00005",
+          "name": "Gateway Module GM-400",
+          "count": 3,
+          "defects": [
+            "DEF-00079",
+            "DEF-00090",
+            "DEF-00098"
+          ]
+        }
+      ],
+      "problemTypes": [
+        {
+          "type": "supply",
+          "label": "Zulieferer",
+          "count": 35,
+          "defects": [
+            "DEF-00001",
+            "DEF-00002",
+            "DEF-00003",
+            "DEF-00004",
+            "DEF-00005",
+            "DEF-00006",
+            "DEF-00007",
+            "DEF-00008",
+            "DEF-00009",
+            "DEF-00010",
+            "DEF-00011",
+            "DEF-00012",
+            "DEF-00013",
+            "DEF-00014",
+            "DEF-00015",
+            "DEF-00016",
+            "DEF-00017",
+            "DEF-00018",
+            "DEF-00019",
+            "DEF-00020"
+          ]
+        },
+        {
+          "type": "other",
+          "label": "Sonstiges",
+          "count": 33,
+          "defects": [
+            "DEF-00071",
+            "DEF-00073",
+            "DEF-00076",
+            "DEF-00079",
+            "DEF-00086",
+            "DEF-00087",
+            "DEF-00088",
+            "DEF-00091",
+            "DEF-00093",
+            "DEF-00097",
+            "DEF-00098",
+            "DEF-00099",
+            "DEF-00101",
+            "DEF-00102",
+            "DEF-00104",
+            "DEF-00107",
+            "DEF-00109",
+            "DEF-00112",
+            "DEF-00114",
+            "DEF-00116"
+          ]
+        },
+        {
+          "type": "technical_design",
+          "label": "Design",
+          "count": 21,
+          "defects": [
+            "FC-00013",
+            "FC-00014",
+            "FC-00015",
+            "FC-00016",
+            "FC-00017",
+            "FC-00018",
+            "FC-00019",
+            "FC-00020",
+            "FC-00021",
+            "FC-00024",
+            "FC-00025",
+            "FC-00027",
+            "FC-00028",
+            "FC-00029",
+            "FC-00030",
+            "FC-00031",
+            "FC-00032",
+            "FC-00034",
+            "FC-00037",
+            "FC-00038"
+          ]
+        },
+        {
+          "type": "personnel",
+          "label": "Personal",
+          "count": 13,
+          "defects": [
+            "DEF-00046",
+            "DEF-00047",
+            "DEF-00049",
+            "DEF-00050",
+            "DEF-00051",
+            "DEF-00052",
+            "DEF-00053",
+            "DEF-00054",
+            "DEF-00055",
+            "DEF-00056",
+            "DEF-00057",
+            "DEF-00059",
+            "DEF-00144"
+          ]
+        }
+      ]
+    },
+    "computedAt": "2026-04-19T12:21:28.933169+00:00",
+    "windowDays": 90,
+    "assumptions": {
+      "hourlyReworkRateEur": 80,
+      "preventedClaimCostEur": 1500
+    }
+  }
 }

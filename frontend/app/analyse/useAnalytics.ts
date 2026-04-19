@@ -1,5 +1,5 @@
-// Hook wrapper: pickt den analytics-Block aus dem Snapshot.
-// Liefert null solange der Agent noch nicht frisch computed hat.
+// Hook wrapper: picks the analytics block from the snapshot.
+// Returns null until the agent has computed fresh analytics.
 
 "use client";
 

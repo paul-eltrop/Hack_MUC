@@ -1,5 +1,5 @@
-// Dashboard-Client fuer /analyse.
-// Orchestriert KPIs, Pie-Charts, Top-Defects-Bar + Drilldown-Panel.
+// Dashboard client for /analyse.
+// Orchestrates KPIs, pie charts, top-defects bar, and drilldown panel.
 
 "use client";
 
@@ -10,6 +10,7 @@ import { DefectPieChart } from "./DefectPieChart";
 import { ProblemTypePieChart } from "./ProblemTypePieChart";
 import { TopDefectsBar } from "./TopDefectsBar";
 import { DrilldownPanel, type DrilldownSelection } from "./DrilldownPanel";
+import { defectLabel } from "./defect-labels";
 
 function formatHours(h: number): string {
   if (h >= 100) return `${Math.round(h)} h`;
@@ -30,19 +31,19 @@ export function AnalyseDashboard() {
   const kpiRow = useMemo(() => {
     if (!analytics) return null;
     const { kpis } = analytics;
-    const topCode = kpis.topDefects[0]?.code ?? "—";
+    const topCode = kpis.topDefects[0]?.code;
     return (
       <div className="grid grid-cols-2 gap-px bg-gray-100 rounded-2xl overflow-hidden md:grid-cols-3 lg:grid-cols-5">
         <KpiTile
-          label="Gesparte Zeit"
+          label="Time Saved"
           value={formatHours(kpis.timeSavedHours)}
-          hint={`durch ${analytics.windowDays}-Tage Repeat-Detection`}
+          hint={`via ${analytics.windowDays}-day repeat detection`}
           accent="green"
         />
         <KpiTile
-          label="Gespartes Geld"
+          label="Money Saved"
           value={formatEur(kpis.moneySavedEur)}
-          hint={`${kpis.preventedClaims} verhinderte Claims`}
+          hint={`${kpis.preventedClaims} prevented claims`}
           accent="green"
         />
         <KpiTile
@@ -53,13 +54,13 @@ export function AnalyseDashboard() {
         <KpiTile
           label="Issues 30d"
           value={`${kpis.issuesLast30Days}`}
-          hint="Defekte + Claims"
+          hint="Defects + claims"
           accent={kpis.issuesLast30Days > 50 ? "amber" : "gray"}
         />
         <KpiTile
-          label="Top-Defekt"
-          value={topCode}
-          hint={`${kpis.topDefects[0]?.count ?? 0} Faelle`}
+          label="Top Defect"
+          value={topCode ? defectLabel(topCode) : "—"}
+          hint={`${kpis.topDefects[0]?.count ?? 0} cases`}
           accent="red"
         />
       </div>
@@ -80,8 +81,8 @@ export function AnalyseDashboard() {
           <div className="flex items-baseline justify-between">
             <h1 className="text-4xl font-bold tracking-tight text-gray-950">Analytics</h1>
             <span className="text-xs text-gray-400">
-              {analytics.windowDays}-Tage-Fenster · zuletzt{" "}
-              {new Date(analytics.computedAt).toLocaleString("de-DE", {
+              {analytics.windowDays}-day window · updated{" "}
+              {new Date(analytics.computedAt).toLocaleString("en-US", {
                 day: "2-digit",
                 month: "2-digit",
                 hour: "2-digit",
@@ -100,7 +101,7 @@ export function AnalyseDashboard() {
         <section className="mb-10">{kpiRow}</section>
 
         <section className="grid grid-cols-1 gap-6 mb-10 lg:grid-cols-2">
-          <ChartCard title="Defekte nach Produktgruppe" subtitle="Klick fuer Defect-IDs">
+          <ChartCard title="Defects by Product Group" subtitle="Click for defect IDs">
             <DefectPieChart
               data={analytics.charts.defectsByProductGroup}
               onSegmentClick={(articleId) => {
@@ -110,7 +111,7 @@ export function AnalyseDashboard() {
                 if (!bucket) return;
                 setSelection({
                   title: bucket.name,
-                  subtitle: `${bucket.articleId} · ${bucket.count} Defekte`,
+                  subtitle: `${bucket.articleId} · ${bucket.count} defects`,
                   items: bucket.defects,
                   accent: "red",
                 });
@@ -118,7 +119,7 @@ export function AnalyseDashboard() {
             />
           </ChartCard>
 
-          <ChartCard title="Problemtypen" subtitle="Klassifiziert nach Root-Cause">
+          <ChartCard title="Problem Types" subtitle="Classified by root cause">
             <ProblemTypePieChart
               data={analytics.charts.problemTypes}
               onSegmentClick={(typeKey) => {
@@ -133,7 +134,7 @@ export function AnalyseDashboard() {
                 } as const;
                 setSelection({
                   title: bucket.label,
-                  subtitle: `${bucket.count} Faelle`,
+                  subtitle: `${bucket.count} cases`,
                   items: bucket.defects,
                   accent: accentMap[bucket.type] ?? "gray",
                 });
@@ -142,14 +143,14 @@ export function AnalyseDashboard() {
           </ChartCard>
         </section>
 
-        <ChartCard title="Top 10 Defekt-Codes" subtitle="Letzte 90 Tage">
+        <ChartCard title="Top 10 Defect Codes" subtitle="Last 90 days">
           <TopDefectsBar
             data={analytics.kpis.topDefects}
             onBarClick={(code) => {
               const entry = analytics.kpis.topDefects.find((d) => d.code === code);
               if (!entry) return;
               setSelection({
-                title: code,
+                title: defectLabel(code),
                 subtitle: `Severity: ${entry.severity ?? "—"}`,
                 items: [],
                 accent: entry.severity === "critical" ? "red" : "amber",
@@ -159,9 +160,9 @@ export function AnalyseDashboard() {
         </ChartCard>
 
         <footer className="mt-10 text-xs text-gray-400">
-          Annahmen: {analytics.assumptions.hourlyReworkRateEur} €/h Rework-Rate ·{" "}
-          {analytics.assumptions.preventedClaimCostEur.toLocaleString("de-DE")} € pro verhinderter
-          Field-Claim
+          Assumptions: {analytics.assumptions.hourlyReworkRateEur} €/h rework rate ·{" "}
+          {analytics.assumptions.preventedClaimCostEur.toLocaleString("en-US")} € per prevented
+          field claim
         </footer>
       </div>
 
@@ -199,11 +200,11 @@ function EmptyState() {
         </p>
         <h1 className="text-4xl font-bold tracking-tight text-gray-950 mb-4">Analytics</h1>
         <p className="text-sm text-gray-500 mb-6">
-          Noch keine Analytics berechnet. Starte{" "}
+          No analytics computed yet. Start{" "}
           <code className="px-1.5 py-0.5 bg-gray-100 rounded text-gray-700 text-xs">
             python3 -m agent_service.refresh
           </code>{" "}
-          um KPIs und Charts zu fuellen.
+          to populate KPIs and charts.
         </p>
       </div>
     </div>

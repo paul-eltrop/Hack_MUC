@@ -68,8 +68,8 @@ export default function InvestigationChat({ inv, onTimelineAdd, onTimelineUpdate
       {
         role: "assistant",
         content: res.ok
-          ? `✓ "${file.name}" indexed (${data.chunks} chunks). Du kannst jetzt darüber fragen.`
-          : `✗ Upload fehlgeschlagen: ${data.error ?? "Unbekannter Fehler"}`,
+          ? `✓ "${file.name}" indexed (${data.chunks} chunks). You can ask about it now.`
+          : `✗ Upload failed: ${data.error ?? "Unknown error"}`,
       },
     ]);
     e.target.value = "";
@@ -167,7 +167,7 @@ export default function InvestigationChat({ inv, onTimelineAdd, onTimelineUpdate
           <button
             onClick={() => fileInputRef.current?.click()}
             className="grid size-8 shrink-0 place-items-center rounded-full text-gray-300 hover:text-gray-500 transition-colors"
-            title="Datei hochladen"
+            title="Upload file"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />

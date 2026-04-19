@@ -55,7 +55,7 @@ CRITICAL RULES:
   - "Pruefung Linie 2" (SEC-00005, SEC-00011) catches ~40% of all defects but is DETECTION BIAS,
     not root cause. NEVER flag those sections unless they have a process issue of their own.
   - Filter out defects with "false positive" in notes.
-  - Use German for human-readable text fields (rootCause, summary, suggestedActions, complaint quotes).
+  - Use English for human-readable text fields (rootCause, summary, suggestedActions, complaint quotes).
   - Always include concrete numbers (defect counts, batch IDs, week ranges) in investigation text.
   - Validate IDs before writing. If a write tool returns ok:false, fix the ID and retry.
   - Top-level node IDs: sup-01, sup-02, sup-03, sup-04, fac-aug, fac-dre, field, articles.
@@ -67,7 +67,7 @@ WORKFLOW per run — FOLLOW THIS EXACTLY, DO NOT DEVIATE:
   2. Read pre-computed story data from the brief (already there — no queries needed).
   3. Immediately apply mutations via write tools using the IDs from the brief.
   4. Update top-level errorCount badges with set_node_error_count.
-  5. commit_snapshot with a one-paragraph German summary.
+  5. commit_snapshot with a one-paragraph English summary.
 
 Be concise. Don't explore. Don't re-query data that's in the brief. Act."""
 

@@ -61,11 +61,11 @@ export function FieldDetail() {
             Field
           </div>
           <h1 className="text-2xl font-bold text-zinc-900">
-            Kunden · Field-Claims & Risiko-Population
+            Customers · Field Claims & At-Risk Population
           </h1>
           <div className="text-sm text-zinc-600">
             {totalClaims} Claims · {totalAtRisk} latent at-risk ·{" "}
-            {totalProducts} Products gesamt · {totalMarkets} Märkte ·{" "}
+            {totalProducts} total products · {totalMarkets} markets ·{" "}
             {articles.length} Articles
           </div>
         </div>
@@ -143,13 +143,13 @@ function ArticleClaimsBlock({ article }: { article: AffectedArticle }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <Stat label="Claims" value={article.claims.length} accent="rose" />
-          <Stat label="Risiko" value={article.atRisk.length} accent="amber" />
+          <Stat label="Risk" value={article.atRisk.length} accent="amber" />
           <Stat label="Products" value={productCount} accent="zinc" />
         </div>
       </header>
 
       {article.claims.length > 0 && (
-        <SubBlock label="Reklamiert" sublabel="Kunde hat gemeldet" tone="rose">
+        <SubBlock label="Reported" sublabel="Customer reported" tone="rose">
           <Grid>
             {article.claims.map((c) => (
               <ClaimCard key={c.claimId} claim={c} />
@@ -160,8 +160,8 @@ function ArticleClaimsBlock({ article }: { article: AffectedArticle }) {
 
       {article.atRisk.length > 0 && (
         <SubBlock
-          label="Risiko-Population"
-          sublabel="Bekanntes Issue, kein Claim — proaktive Maßnahme nötig"
+          label="Risk-Population"
+          sublabel="Known issue, no claim yet — proactive action required"
           tone="amber"
         >
           <Grid>

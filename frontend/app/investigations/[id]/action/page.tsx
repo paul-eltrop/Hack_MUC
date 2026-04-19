@@ -141,13 +141,13 @@ export default function KanbanBoard() {
         const data = await res.json();
         if (!res.ok || !data.ok) {
           const detail = typeof data?.detail === "string" ? data.detail : "";
-          setClosingError(data?.error || detail || "Abschluss konnte nicht ins RAG geschrieben werden");
+          setClosingError(data?.error || detail || "Unable to write closure to RAG");
           return;
         }
         markInvestigationClosed(id);
         setClosingDone(true);
       } catch {
-        setClosingError("Portal nicht erreichbar — Abschluss konnte nicht gespeichert werden");
+        setClosingError("Portal unreachable — unable to save closure");
       } finally {
         setClosingBusy(false);
       }
@@ -307,10 +307,10 @@ export default function KanbanBoard() {
         setShareLink(`${PORTAL_URL}/share/${data.id}`);
         setCards((prev) => prev.map((c) => (c.id === panel.card.id ? { ...c, linkId: data.id } : c)));
       } else {
-        setShareError(data.error ?? "Link konnte nicht erstellt werden");
+        setShareError(data.error ?? "Unable to create link");
       }
     } catch {
-      setShareError("Portal nicht erreichbar — läuft uvicorn auf Port 8000?");
+      setShareError("Portal unreachable — is uvicorn running on port 8000?");
     }
     setShareLoading(false);
   }
@@ -359,12 +359,12 @@ export default function KanbanBoard() {
         </div>
         {closingBusy && (
           <div className="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
-            Alle Tasks completed: Fall wird zusammengefasst und ins RAG geschrieben…
+            All tasks completed: case is being summarized and written to RAG…
           </div>
         )}
         {closingDone && (
           <div className="mb-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
-            Abschluss gespeichert: Investigation wurde aus dem Critical-Filter entfernt und im RAG abgelegt.
+            Closure saved: investigation was removed from the critical filter and stored in RAG.
           </div>
         )}
         {closingError && (
@@ -693,7 +693,7 @@ export default function KanbanBoard() {
                   )}
                   {downloadError && (
                     <div className="space-y-1">
-                      <p className="text-xs text-red-500">Datei nicht auf Server — bitte nochmal einreichen.</p>
+                      <p className="text-xs text-red-500">File not found on server — please upload again.</p>
                       {panel.mode === "edit" && panel.card.linkId && (
                         <a
                           href={`${PORTAL_URL}/share/${panel.card.linkId}`}
@@ -701,7 +701,7 @@ export default function KanbanBoard() {
                           rel="noopener noreferrer"
                           className="text-xs font-semibold text-blue-500 hover:underline"
                         >
-                          → Share-Link öffnen &amp; Datei nochmal hochladen
+                          → Open share link &amp; upload file again
                         </a>
                       )}
                     </div>

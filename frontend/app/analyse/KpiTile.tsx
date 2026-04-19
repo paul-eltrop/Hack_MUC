@@ -1,5 +1,5 @@
-// Eine KPI-Kachel im Analytics-Grid.
-// Label oben (uppercase tracking-widest), Wert gross, optional Unit/Hint darunter.
+// A KPI tile in the analytics grid.
+// Label on top (uppercase tracking-widest), large value, optional unit/hint below.
 
 type Props = {
   label: string;

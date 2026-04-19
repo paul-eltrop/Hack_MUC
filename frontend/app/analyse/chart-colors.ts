@@ -1,5 +1,5 @@
-// Zentrale Farbpalette fuer Analytics-Pies und Bars.
-// Haelt sich an die bestehende Severity-Palette aus investigations/flow-data.
+// Central color palette for analytics pie charts and bars.
+// Reuses the existing severity palette from investigations/flow-data.
 
 export const PRODUCT_GROUP_COLORS = [
   "#dc2626",
