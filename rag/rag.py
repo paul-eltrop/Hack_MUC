@@ -9,7 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from openai import OpenAI
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, PointStruct, VectorParams
+from qdrant_client.models import Distance, FieldCondition, Filter, MatchValue, PointStruct, VectorParams
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
@@ -59,6 +59,14 @@ def index_document(doc_id: str, text: str, metadata: dict) -> None:
         for i, (chunk, vector) in enumerate(zip(chunks, vectors))
     ]
     qdrant.upsert(collection_name=COLLECTION, points=points)
+
+
+def delete_document(doc_id: str) -> int:
+    _ensure_collection()
+    doc_filter = Filter(must=[FieldCondition(key="doc_id", match=MatchValue(value=doc_id))])
+    count_before = qdrant.count(collection_name=COLLECTION, count_filter=doc_filter, exact=True).count
+    qdrant.delete(collection_name=COLLECTION, points_selector=doc_filter)
+    return count_before
 
 
 def retrieve(query: str, top_k: int = 5) -> list[dict]:

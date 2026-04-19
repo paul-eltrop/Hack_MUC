@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 
 from docling.document_converter import DocumentConverter
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -26,6 +27,8 @@ MAX_UPLOAD_SIZE_BYTES = 30 * 1024 * 1024
 ALLOWED_EXTENSIONS = {
     ".pdf", ".docx", ".pptx", ".xlsx", ".md", ".txt", ".html", ".htm", ".csv",
 }
+ARCHIVE_CATEGORIES = {"8d-report", "fmea", "lieferant", "werk", "spezifikation", "sonstiges"}
+ARCHIVE_COMPANY_ID = "manex-archive"
 
 openai_client = OpenAI()
 qdrant = QdrantClient(path=QDRANT_PATH)
@@ -88,6 +91,19 @@ def init_db():
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_rag_contra_company_newdoc ON rag_contradictions(company_id, new_doc_id)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS archive_documents (
+            doc_id TEXT PRIMARY KEY,
+            file_name TEXT NOT NULL,
+            file_sha256 TEXT NOT NULL UNIQUE,
+            file_size_bytes INTEGER NOT NULL,
+            mime_type TEXT,
+            category TEXT NOT NULL,
+            text_excerpt TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_archive_category ON archive_documents(category)")
     conn.commit()
     conn.close()
 
@@ -108,6 +124,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 def embed(texts: list[str]) -> list[list[float]]:
@@ -667,6 +690,154 @@ async def upload_document(
         "contradictions_found": len(contradictions),
         "contradictions": contradictions[:20],
     }
+
+
+class ArchiveDocument(BaseModel):
+    doc_id: str
+    file_name: str
+    file_size_bytes: int
+    mime_type: str | None = None
+    category: str
+    text_excerpt: str | None = None
+    created_at: str
+
+
+def _archive_row_to_dict(row: sqlite3.Row) -> dict:
+    return {
+        "doc_id": row["doc_id"],
+        "file_name": row["file_name"],
+        "file_size_bytes": int(row["file_size_bytes"]),
+        "mime_type": row["mime_type"],
+        "category": row["category"],
+        "text_excerpt": row["text_excerpt"],
+        "created_at": row["created_at"],
+    }
+
+
+@app.post("/archive/upload")
+async def archive_upload(
+    file: UploadFile = File(...),
+    category: str = Form(...),
+):
+    if category not in ARCHIVE_CATEGORIES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unbekannte Kategorie '{category}'. Erlaubt: {sorted(ARCHIVE_CATEGORIES)}",
+        )
+
+    filename = file.filename or "document"
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Dateityp nicht unterstützt: {suffix or 'ohne Endung'}")
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Datei ist leer")
+    if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Datei ist zu groß (max 30 MB)")
+
+    file_sha256 = sha256_hex(file_bytes)
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    existing = conn.execute(
+        "SELECT doc_id, file_name, category FROM archive_documents WHERE file_sha256 = ?",
+        (file_sha256,),
+    ).fetchone()
+    conn.close()
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Datei ist bereits im Archiv",
+                "doc_id": existing["doc_id"],
+                "file_name": existing["file_name"],
+                "category": existing["category"],
+            },
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(file_bytes)
+        temp_path = Path(tmp.name)
+
+    try:
+        parsed_text = parse_document_with_docling(temp_path).strip()
+        if not parsed_text:
+            raise HTTPException(status_code=400, detail="Kein Text im Dokument erkannt")
+
+        doc_id = f"ARC-{uuid.uuid4().hex[:12].upper()}"
+        excerpt = parsed_text[:240]
+
+        index_document(
+            doc_id,
+            parsed_text,
+            {
+                "source": "archive",
+                "company_id": ARCHIVE_COMPANY_ID,
+                "category": category,
+                "file_name": filename,
+            },
+        )
+
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        conn.execute(
+            """
+            INSERT INTO archive_documents (
+                doc_id, file_name, file_sha256, file_size_bytes, mime_type, category, text_excerpt
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (doc_id, filename, file_sha256, len(file_bytes), file.content_type, category, excerpt),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT doc_id, file_name, file_size_bytes, mime_type, category, text_excerpt, created_at "
+            "FROM archive_documents WHERE doc_id = ?",
+            (doc_id,),
+        ).fetchone()
+        conn.close()
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Dokument konnte nicht verarbeitet werden: {exc}") from exc
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+    return _archive_row_to_dict(row)
+
+
+@app.get("/archive/documents")
+def archive_list():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT doc_id, file_name, file_size_bytes, mime_type, category, text_excerpt, created_at "
+        "FROM archive_documents ORDER BY created_at DESC"
+    ).fetchall()
+    conn.close()
+    return [_archive_row_to_dict(r) for r in rows]
+
+
+@app.delete("/archive/documents/{doc_id}")
+def archive_delete(doc_id: str):
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute(
+        "SELECT doc_id FROM archive_documents WHERE doc_id = ?", (doc_id,)
+    ).fetchone()
+    if not row:
+        conn.close()
+        raise HTTPException(status_code=404, detail=f"Dokument '{doc_id}' nicht im Archiv")
+
+    doc_filter = Filter(must=[FieldCondition(key="doc_id", match=MatchValue(value=doc_id))])
+    deleted_chunks = qdrant.count(
+        collection_name=ACTIVE_COLLECTION, count_filter=doc_filter, exact=True
+    ).count
+    qdrant.delete(collection_name=ACTIVE_COLLECTION, points_selector=doc_filter)
+
+    conn.execute("DELETE FROM archive_documents WHERE doc_id = ?", (doc_id,))
+    conn.commit()
+    conn.close()
+    return {"ok": True, "doc_id": doc_id, "deleted_chunks": deleted_chunks}
 
 
 @app.get("/debug/rag")

@@ -196,22 +196,55 @@ python3 -m agent_service.cron &
 
 | File | Rolle |
 |---|---|
-| `main.py` | FastAPI-Server: Share-Links, Document-Upload, RAG-Ingestion, Static-File-Serving |
+| `main.py` | FastAPI-Server: Share-Links, Document-Upload, RAG-Ingestion, Archive, Static-File-Serving |
 
-- **Endpoints** (laut Code-Header): `/upload` (PDF/DOCX/PPTX/etc. via Docling), CRUD für Share-Links
-- **SQLite-Tabellen**: `share_links`, `rag_documents`, `rag_claims`, `rag_contradictions`
-- **Qdrant** (lokales Storage in `rag/qdrant_storage/`) für Vector-Embeddings via `text-embedding-3-small`
-- **Docling** für Dokument-Parsing
+- **Share-Endpoints**: `POST /share/links`, `GET /share/links`, `GET /share/links/{id}`, `POST /share/chat`, `POST /share/upload`, `GET /share/uploads/{link_id}`
+- **Archive-Endpoints** (intern, fürs Quality-Wissen):
+  - `POST /archive/upload` — Multipart: `file` + `category` (8d-report/fmea/lieferant/werk/spezifikation/sonstiges) → Docling-Parse + RAG-Index, returnt `ArchiveDocument`. SHA256-Dedupe → 409 falls Datei schon da.
+  - `GET /archive/documents` → `list[ArchiveDocument]` sortiert nach `created_at DESC`
+  - `DELETE /archive/documents/{doc_id}` → entfernt SQLite-Eintrag und alle Qdrant-Chunks via Filter
+- **Debug**: `GET /debug/rag` listet erste 200 Qdrant-Punkte
+- **CORS**: Whitelist `http://localhost:3000` für Frontend-Calls
+- **SQLite-Tabellen**: `share_links`, `rag_documents`, `rag_claims`, `rag_contradictions`, `archive_documents`
+- **Qdrant** (lokales Storage in `rag/qdrant_storage/`) für Vector-Embeddings via `text-embedding-3-small`. Archive-Docs nutzen `company_id="manex-archive"` als Tag.
+- **Docling** für Dokument-Parsing — erster Aufruf 30-60s wegen Model-Cold-Start
 - Liest `.env` aus Projekt-Root für `OPENAI_API_KEY`
+
+**Start:** `uvicorn portal.main:app --port 8000 --reload`
 
 ## Part 4 — `rag/` (Standalone RAG-Pipeline)
 
 | File | Rolle |
 |---|---|
-| `rag.py` | Funktionen: `index_document()`, `retrieve()`, `answer()`, `chunk_text()`, `embed()` |
+| `rag.py` | Funktionen: `index_document()`, `retrieve()`, `delete_document()`, `answer()`, `chunk_text()`, `embed()` |
 
-- Wird vom `portal/` benutzt (gleiches Qdrant-Storage)
+- Wird vom `portal/` und `agent_service/` benutzt (gleiches Qdrant-Storage `./qdrant_storage` oder via `QDRANT_PATH` env)
+- `delete_document(doc_id) -> int` filtert Qdrant-Punkte nach `doc_id`-Payload und löscht alle Chunks, returnt Anzahl
 - Kein eigener HTTP-Server — wird programmtisch importiert
+
+### Archive-Page testen (E2E)
+
+**Voraussetzung:** Portal läuft auf Port 8000, Frontend hat `frontend/.env.local` mit `NEXT_PUBLIC_PORTAL_URL=http://localhost:8000`.
+
+```bash
+# 1. Portal starten:
+uvicorn portal.main:app --port 8000 --reload
+
+# 2. Smoke-Test:
+curl http://localhost:8000/archive/documents     # → []
+
+# 3. Upload via curl:
+curl -F "file=@manex-base/docs/DATA_PATTERNS.md" -F "category=sonstiges" \
+     http://localhost:8000/archive/upload
+# → {"doc_id": "ARC-...", "file_name": "DATA_PATTERNS.md", ...}
+
+# 4. RAG-Verbindung prüfen — Agent sollte das Dokument finden:
+python3 -c "from rag.rag import retrieve; print(retrieve('Story 1 supplier batch', top_k=2))"
+
+# 5. Frontend testen:
+cd frontend && npm run dev
+# → http://localhost:3000/archive: Drag&Drop, Kategorie wählen, Upload, Gallery cluster, Delete
+```
 
 ## start.sh
 
