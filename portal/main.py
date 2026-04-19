@@ -92,6 +92,14 @@ def init_db():
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_rag_contra_company_newdoc ON rag_contradictions(company_id, new_doc_id)")
     conn.execute("""
+        CREATE TABLE IF NOT EXISTS link_completions (
+            link_id TEXT PRIMARY KEY,
+            description TEXT,
+            file_name TEXT,
+            completed_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.execute("""
         CREATE TABLE IF NOT EXISTS archive_documents (
             doc_id TEXT PRIMARY KEY,
             file_name TEXT NOT NULL,
@@ -463,6 +471,12 @@ class ChatRequest(BaseModel):
     history: list[dict] = []
 
 
+class InvestigationCloseRequest(BaseModel):
+    investigation_id: str
+    investigation: dict
+    tasks: list[dict]
+
+
 @app.post("/share/links")
 def create_link(req: CreateLinkRequest):
     link_id = str(uuid.uuid4())[:8]
@@ -499,6 +513,70 @@ def get_link(link_id: str):
     if not row:
         raise HTTPException(status_code=404, detail="Link not found")
     return {"id": row[0], "company_id": row[1], "welcome_message": row[2], "topic": row[3]}
+
+
+@app.get("/share/links/{link_id}/status")
+def get_link_status(link_id: str):
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute(
+        "SELECT description, file_name, completed_at FROM link_completions WHERE link_id = ?", (link_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return {"completed": False}
+    return {"completed": True, "description": row[0], "file_name": row[1], "completed_at": row[2]}
+
+
+PROOFS_DIR = Path(__file__).parent / "proofs"
+
+@app.post("/share/links/{link_id}/complete")
+async def complete_link(link_id: str, description: str = Form(""), file: UploadFile = File(None)):
+    get_link(link_id)
+    file_name = None
+    if file and file.filename:
+        file_bytes = await file.read()
+        file_name = file.filename
+        suffix = Path(file_name).suffix.lower()
+        PROOFS_DIR.mkdir(exist_ok=True)
+        proof_path = PROOFS_DIR / f"{link_id}{suffix}"
+        proof_path.write_bytes(file_bytes)
+        if suffix in ALLOWED_EXTENSIONS:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp.write(file_bytes)
+                temp_path = Path(tmp.name)
+            try:
+                parsed_text = parse_document_with_docling(temp_path).strip()
+                if parsed_text:
+                    doc_id = f"proof-{link_id}-{uuid.uuid5(uuid.NAMESPACE_DNS, file_name).hex[:10]}"
+                    index_document(doc_id, parsed_text, {"source": file_name, "link_id": link_id, "type": "proof"})
+            except Exception:
+                pass
+            finally:
+                temp_path.unlink(missing_ok=True)
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "INSERT OR REPLACE INTO link_completions (link_id, description, file_name) VALUES (?, ?, ?)",
+        (link_id, description, file_name),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "link_id": link_id}
+
+
+@app.get("/share/links/{link_id}/proof-file")
+def download_proof(link_id: str):
+    from fastapi.responses import FileResponse as FR
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute("SELECT file_name FROM link_completions WHERE link_id = ?", (link_id,)).fetchone()
+    conn.close()
+    if not row or not row[0]:
+        raise HTTPException(status_code=404, detail="No file")
+    suffix = Path(row[0]).suffix.lower()
+    proof_path = PROOFS_DIR / f"{link_id}{suffix}"
+    if not proof_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FR(str(proof_path), filename=row[0])
 
 
 @app.post("/share/chat")
@@ -873,6 +951,245 @@ def list_uploads(link_id: str):
 
 
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+
+
+INVESTIGATION_COMPANY_ID = "manex"
+
+
+@app.post("/investigation/upload")
+async def investigation_upload(
+    investigation_id: str = Form(...),
+    file: UploadFile = File(...),
+):
+    filename = file.filename or "document"
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Dateityp nicht unterstützt: {suffix}")
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Datei ist leer")
+    if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Datei zu groß (max 30 MB)")
+
+    file_sha256 = sha256_hex(file_bytes)
+
+    existing = find_document_by_hash(INVESTIGATION_COMPANY_ID, file_sha256)
+    if existing and existing["status"] == "accepted":
+        return {
+            "ok": True,
+            "deduplicated": True,
+            "message": "Datei bereits indexiert",
+            "doc_id": existing["doc_id"],
+            "file_name": filename,
+        }
+    if existing and existing["status"] in {"quarantined", "rejected"}:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Datei wurde zuvor wegen Datenkonflikt blockiert",
+                "status": existing["status"],
+                "reason": existing["reason"],
+            },
+        )
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(file_bytes)
+        temp_path = Path(tmp.name)
+
+    try:
+        parsed_text = parse_document_with_docling(temp_path).strip()
+        if not parsed_text:
+            raise HTTPException(status_code=400, detail="Kein Text im Dokument erkannt")
+
+        doc_id = f"inv-{investigation_id}-{uuid.uuid5(uuid.NAMESPACE_DNS, file_sha256).hex[:10]}"
+        claims = extract_claims(parsed_text)
+        contradictions = detect_contradictions(
+            company_id=INVESTIGATION_COMPANY_ID,
+            doc_id=doc_id,
+            claims=claims,
+            source=filename,
+        )
+
+        if contradictions:
+            store_document_status(
+                doc_id=doc_id,
+                company_id=INVESTIGATION_COMPANY_ID,
+                link_id=investigation_id,
+                file_name=filename,
+                file_sha256=file_sha256,
+                source=filename,
+                status="quarantined",
+                reason="contradictory_claims",
+            )
+            store_contradictions(INVESTIGATION_COMPANY_ID, investigation_id, doc_id, contradictions)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "message": "Upload blockiert: Widerspruch zu bestehendem RAG-Wissen erkannt",
+                    "status": "quarantined",
+                    "doc_id": doc_id,
+                    "contradictions_found": len(contradictions),
+                    "contradictions": contradictions[:5],
+                },
+            )
+
+        index_document(
+            doc_id,
+            parsed_text,
+            {
+                "source": filename,
+                "investigation_id": investigation_id,
+                "company_id": INVESTIGATION_COMPANY_ID,
+                "file_name": filename,
+            },
+        )
+        store_claims(INVESTIGATION_COMPANY_ID, investigation_id, doc_id, filename, claims)
+        store_document_status(
+            doc_id=doc_id,
+            company_id=INVESTIGATION_COMPANY_ID,
+            link_id=investigation_id,
+            file_name=filename,
+            file_sha256=file_sha256,
+            source=filename,
+            status="accepted",
+        )
+        return {
+            "ok": True,
+            "doc_id": doc_id,
+            "chunks": len(chunk_text(parsed_text)),
+            "claims_extracted": len(claims),
+            "file_name": filename,
+        }
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+
+@app.post("/investigation/retrieve")
+async def investigation_retrieve(body: dict):
+    query: str = body.get("query", "")
+    investigation_id: str = body.get("investigation_id", "")
+    if not query:
+        raise HTTPException(status_code=400, detail="query fehlt")
+
+    query_vector = embed([query])[0]
+    filter_condition = Filter(
+        must=[FieldCondition(key="investigation_id", match=MatchValue(value=investigation_id))]
+    ) if investigation_id else None
+
+    results = qdrant.query_points(
+        collection_name=ACTIVE_COLLECTION,
+        query=query_vector,
+        query_filter=filter_condition,
+        limit=5,
+        with_payload=True,
+    ).points
+    return [
+        {"text": r.payload["text"], "source": r.payload.get("file_name", "unknown"), "score": r.score}
+        for r in results
+    ]
+
+
+@app.post("/investigation/close")
+def investigation_close(req: InvestigationCloseRequest):
+    if not req.tasks:
+        raise HTTPException(status_code=400, detail="Keine Tasks übergeben")
+    if any(str(task.get("status", "")).lower() != "completed" for task in req.tasks):
+        raise HTTPException(status_code=400, detail="Nicht alle Tasks sind completed")
+
+    inv = req.investigation or {}
+    timeline = inv.get("timeline") or []
+    affected = inv.get("affectedProducts") or []
+
+    task_lines = []
+    for idx, task in enumerate(req.tasks, 1):
+        assignees = ", ".join(task.get("assignees") or [])
+        proof_desc = (task.get("proofDescription") or "").strip()
+        proof_file = (task.get("proofFileName") or "").strip()
+        link_id = (task.get("linkId") or "").strip()
+        parts = [f"{idx}. {task.get('text', '')}".strip()]
+        if assignees:
+            parts.append(f"Owner: {assignees}")
+        if proof_desc:
+            parts.append(f"Nachweis: {proof_desc}")
+        if proof_file:
+            parts.append(f"Datei: {proof_file}")
+        if link_id:
+            parts.append(f"Share-Link: {link_id}")
+        task_lines.append(" | ".join(parts))
+
+    timeline_lines = [
+        f"- {entry.get('date', '')}: {entry.get('event', '')}" for entry in timeline if entry.get("event")
+    ]
+    affected_lines = [
+        f"- {product.get('id', '')}: {product.get('name', '')}" for product in affected if product.get("name")
+    ]
+
+    raw_context = "\n".join(
+        [
+            f"Investigation-ID: {req.investigation_id}",
+            f"Titel: {inv.get('title', '')}",
+            f"Schweregrad: {inv.get('severity', '')}",
+            f"Quelle: {inv.get('source', '')}",
+            f"Summary: {inv.get('summary', '')}",
+            f"Root Cause: {inv.get('rootCause', '')}",
+            f"Defects: {inv.get('defects', 0)} | Claims: {inv.get('claims', 0)} | Risk: {inv.get('risk', 0)}",
+            "",
+            "Betroffene Produkte:",
+            *affected_lines,
+            "",
+            "Timeline:",
+            *timeline_lines,
+            "",
+            "Abgeschlossene Tasks inklusive Notizen aus Share-Links:",
+            *task_lines,
+        ]
+    ).strip()
+
+    summary_prompt = (
+        "Fasse den Fall für eine RAG-Wissensbasis auf Deutsch zusammen. "
+        "Nenne Problem, Evidenz/Notizen, umgesetzte Lösungsschritte und Ergebnis. "
+        "Schreibe kompakt und faktisch."
+    )
+
+    summary_text = raw_context
+    try:
+        summary_response = openai_client.chat.completions.create(
+            model="gpt-4o",
+            max_tokens=650,
+            messages=[
+                {"role": "system", "content": summary_prompt},
+                {"role": "user", "content": raw_context},
+            ],
+        )
+        content = summary_response.choices[0].message.content
+        if content and content.strip():
+            summary_text = content.strip()
+    except Exception:
+        pass
+
+    doc_id = f"inv-close-{req.investigation_id}-{uuid.uuid4().hex[:8]}"
+    index_document(
+        doc_id,
+        summary_text,
+        {
+            "source": "investigation-closure",
+            "investigation_id": req.investigation_id,
+            "company_id": INVESTIGATION_COMPANY_ID,
+            "file_name": f"{req.investigation_id}-closure-summary.md",
+        },
+    )
+    store_document_status(
+        doc_id=doc_id,
+        company_id=INVESTIGATION_COMPANY_ID,
+        link_id=req.investigation_id,
+        file_name=f"{req.investigation_id}-closure-summary.md",
+        file_sha256=sha256_hex(summary_text.encode("utf-8")),
+        source="investigation-closure",
+        status="accepted",
+    )
+
+    return {"ok": True, "doc_id": doc_id, "summary": summary_text}
 
 
 @app.get("/")

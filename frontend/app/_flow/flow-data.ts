@@ -313,7 +313,7 @@ export const initialEdges: Edge[] = [
   {
     id: "articles->fac-aug",
     source: "articles",
-    sourceHandle: "left",
+    sourceHandle: "bottom",
     target: "fac-aug",
     targetHandle: "top",
     label: "wird hergestellt",
@@ -322,7 +322,7 @@ export const initialEdges: Edge[] = [
   {
     id: "articles->fac-dre",
     source: "articles",
-    sourceHandle: "left",
+    sourceHandle: "bottom",
     target: "fac-dre",
     targetHandle: "top",
     label: "wird hergestellt",

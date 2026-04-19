@@ -270,7 +270,36 @@ def execute_tool(name: str, arguments: dict, draft: dict, prev: dict) -> str:
             return _err(f"rag error: {exc}")
 
     if name == "get_current_state":
-        return json.dumps(prev or {}, default=str)
+        if not prev:
+            return json.dumps({})
+        summary = {
+            "generatedAt": prev.get("generatedAt"),
+            "summary": prev.get("summary"),
+            "investigations": prev.get("investigations", []),
+            "atRiskProducts": prev.get("atRiskProducts", []),
+            "nodes": prev.get("nodes", {}),
+            "flaggedSections": [
+                {"factoryId": fid, "sectionId": s["sectionId"], "flag": s["caseFlag"]}
+                for fid, fac in prev.get("factoryDetails", {}).items()
+                for line in fac.get("lines", [])
+                for s in line.get("sections", [])
+                if s.get("caseFlag")
+            ],
+            "flaggedBomComponents": [
+                {"articleId": art["articleId"], "bomNodeId": c["bomNodeId"], "flag": c["flag"]}
+                for art in prev.get("articleCatalog", [])
+                for asm in art.get("assemblies", [])
+                for c in asm.get("components", [])
+                if c.get("flag")
+            ],
+            "badBatches": [
+                {"supplierNodeId": sid, "batchId": b["batchId"], "status": b["status"]}
+                for sid, sup in prev.get("supplierDetails", {}).items()
+                for b in sup.get("batches", [])
+                if b.get("status") in ("suspect", "bad")
+            ],
+        }
+        return json.dumps(summary, default=str)
 
     if name == "verify_consistency":
         try:

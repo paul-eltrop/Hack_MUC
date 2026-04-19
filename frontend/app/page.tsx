@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useInvestigations } from "./useInvestigations";
 
@@ -14,9 +14,10 @@ const FILTERS: Filter[] = ["Critical", "Not Assigned", "Assigned", "All"];
 
 const NOT_ASSIGNED_STATUSES = new Set(["Action Required", "Awaiting Owner"]);
 const ASSIGNED_STATUSES = new Set(["In Progress", "Monitoring"]);
+const CLOSED_INV_STORAGE_KEY = "closedInvestigations";
 
-function applyFilter(filter: Filter, investigations: ReturnType<typeof useInvestigations>) {
-  if (filter === "Critical") return investigations.filter((i) => i.severity === "critical");
+function applyFilter(filter: Filter, investigations: ReturnType<typeof useInvestigations>, closedIds: Set<string>) {
+  if (filter === "Critical") return investigations.filter((i) => i.severity === "critical" && !closedIds.has(i.id));
   if (filter === "Not Assigned") return investigations.filter((i) => NOT_ASSIGNED_STATUSES.has(i.status));
   if (filter === "Assigned") return investigations.filter((i) => ASSIGNED_STATUSES.has(i.status));
   return investigations;
@@ -37,10 +38,21 @@ const statusPill: Record<string, string> = {
 
 export default function Home() {
   const investigations = useInvestigations();
+  const [closedIds, setClosedIds] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<Filter>("Critical");
-  const visible = applyFilter(filter, investigations);
+  const visible = applyFilter(filter, investigations, closedIds);
   const totalRisk = investigations.reduce((s, i) => s + i.risk, 0);
-  const criticalCount = investigations.filter((i) => i.severity === "critical").length;
+  const criticalCount = investigations.filter((i) => i.severity === "critical" && !closedIds.has(i.id)).length;
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(CLOSED_INV_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) as string[] : [];
+      setClosedIds(new Set(parsed));
+    } catch {
+      setClosedIds(new Set());
+    }
+  }, []);
 
   return (
     <div
