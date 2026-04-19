@@ -1,4 +1,4 @@
-// Generates investigation action cards: RAG retrieval for past similar cases + LLM synthesis.
+// Generates investigation action cards: RAG retrieval for past similar cases + Claude synthesis.
 // Returns a JSON array of suggested action strings grounded in historical context.
 
 export const runtime = "nodejs";
@@ -53,24 +53,23 @@ Affected products: ${investigation.affectedProducts.map((p) => p.name).join(", "
 
 Generate the action list.`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+      "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "gpt-4o",
-      temperature: 0.3,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
     }),
   });
 
   const data = await res.json();
-  const raw = data.choices?.[0]?.message?.content ?? "[]";
+  const raw = data.content?.[0]?.text ?? "[]";
 
   let actions: string[];
   try {

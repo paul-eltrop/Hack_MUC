@@ -1,14 +1,1842 @@
 {
   "schemaVersion": 1,
-  "generatedAt": null,
-  "model": null,
-  "runId": null,
-  "summary": null,
-  "nodes": {},
-  "supplierDetails": {},
-  "factoryDetails": {},
-  "articleCatalog": [],
-  "fieldClaims": [],
-  "atRiskProducts": [],
-  "investigations": []
+  "generatedAt": "2026-04-19T11:10:52.274514+00:00",
+  "model": "claude-sonnet-4-6",
+  "runId": "RUN-95470",
+  "summary": "RUN-95470 (2026-04-19): Vier aktive Untersuchungen eröffnet. INV-001 (kritisch): ElektroParts-Batches SB-00009 (28 Defekte) und SB-00010 (5 Defekte) für PM-00008 (Kondensator 100uF X7R, BOM-Position C12/ART-00001) als „bad\" gesperrt – 14 Feldbeschwerden aus DE/FR/IT/US bestätigen thermischen Totalausfall; BOM-Flag BN-00003 „supply-issue\" gesetzt. INV-002 (high): Prozessdrift in SEC-00001 (Montage Linie 1, Augsburg) durch fehlkalibriertem Drehmomentschlüssel – 20 VIB_FAIL-Defekte KW49–52/2025, selbstkorrigiert; Section-Flag „process\" gesetzt. INV-003 (high): Designfehler R33/PM-00015 (Widerstand 4.7kΩ) in ART-00001 – 5 Feldbeschwerden (DE/ES/PL) ohne Fabrikdefekte, Thermaldrift nach 8–12 Wochen; BOM-Flag BN-00004 „design-issue\" und 5 At-Risk-Produkte (PRD-00039/082/083/084/162) registriert. INV-004 (low): Bediener user_042 verursachte 15 kosmetische Defekte (LABEL_MISALIGN/VISUAL_SCRATCH) in PO-00012/18/24 – Operator-Flag in SEC-00001 gesetzt. Lieferanten-Badges: sup-01 4 Fehler, sup-02 1, sup-03 2, sup-04 1; fac-aug 2 Flags; fac-dre 0; field 2; articles 2. Gesamt 15 Batches bewertet (6× bad, 7× suspect, 2× ok).",
+  "nodes": {
+    "sup-01": {
+      "errorCount": 4,
+      "subtitle": "4 fehlerhafte Batches – SB-00006/07/09 kritisch (PM-00006/07/08)"
+    },
+    "sup-02": {
+      "errorCount": 1,
+      "subtitle": "1 fehlerhafter Batch – SB-00002 (PM-00002, 37 Defekte)"
+    },
+    "sup-03": {
+      "errorCount": 2,
+      "subtitle": "2 fehlerhafte Batches – SB-00017 (PM-00015, 34 Defekte), SB-00018 (PM-00016)"
+    },
+    "sup-04": {
+      "errorCount": 1,
+      "subtitle": "1 fehlerhafter Batch – SB-00011 (PM-00009, 39 Defekte)"
+    },
+    "fac-aug": {
+      "errorCount": 2,
+      "subtitle": "SEC-00001: Prozessdrift (Drehmomentschlüssel, selbstkorrigiert) + Operator user_042"
+    },
+    "fac-dre": {
+      "errorCount": 0,
+      "subtitle": "Keine aktiven Flags"
+    },
+    "field": {
+      "errorCount": 2,
+      "subtitle": "14× C12-Kapazitor (PM-00008) + 5× R33-Thermaldrift (PM-00015) – DE/FR/IT/US/ES/PL"
+    },
+    "articles": {
+      "errorCount": 2,
+      "subtitle": "ART-00001: BN-00003 supply-issue (PM-00008), BN-00004 design-issue (PM-00015)"
+    }
+  },
+  "supplierDetails": {
+    "sup-01": {
+      "supplierId": "SUP-01",
+      "supplierName": "ElektroParts GmbH",
+      "country": null,
+      "partMasters": [
+        {
+          "partNumber": "PM-00001",
+          "title": "Kondensator 10uF 16V",
+          "commodity": "capacitor",
+          "emojiCode": "1f50b"
+        },
+        {
+          "partNumber": "PM-00006",
+          "title": "Mikrocontroller STM32F4",
+          "commodity": "ic",
+          "emojiCode": "1f9e0"
+        },
+        {
+          "partNumber": "PM-00007",
+          "title": "Spannungsregler LM7805",
+          "commodity": "ic",
+          "emojiCode": "1f9e0"
+        },
+        {
+          "partNumber": "PM-00017",
+          "title": "Relais 12V SPDT",
+          "commodity": "relay",
+          "emojiCode": "1f504"
+        },
+        {
+          "partNumber": "PM-00008",
+          "title": "Kondensator 100uF X7R",
+          "commodity": "capacitor",
+          "emojiCode": "1f50b"
+        }
+      ],
+      "batches": [
+        {
+          "batchId": "SB-00001",
+          "batchNumber": "B00001",
+          "partNumber": "PM-00001",
+          "partTitle": "Kondensator 10uF 16V",
+          "receivedDate": "2025-09-15",
+          "qty": 500,
+          "status": "suspect",
+          "events": 4
+        },
+        {
+          "batchId": "SB-00006",
+          "batchNumber": "B00006",
+          "partNumber": "PM-00006",
+          "partTitle": "Mikrocontroller STM32F4",
+          "receivedDate": "2025-10-15",
+          "qty": 200,
+          "status": "bad",
+          "events": 38
+        },
+        {
+          "batchId": "SB-00007",
+          "batchNumber": "B00007",
+          "partNumber": "PM-00007",
+          "partTitle": "Spannungsregler LM7805",
+          "receivedDate": "2025-11-01",
+          "qty": 250,
+          "status": "bad",
+          "events": 37
+        },
+        {
+          "batchId": "SB-00019",
+          "batchNumber": "B00019",
+          "partNumber": "PM-00017",
+          "partTitle": "Relais 12V SPDT",
+          "receivedDate": "2025-11-05",
+          "qty": 200,
+          "status": "suspect",
+          "events": 3
+        },
+        {
+          "batchId": "SB-00008",
+          "batchNumber": "B00008",
+          "partNumber": "PM-00008",
+          "partTitle": "Kondensator 100uF X7R",
+          "receivedDate": "2025-11-10",
+          "qty": 800,
+          "status": "ok",
+          "events": 1
+        },
+        {
+          "batchId": "SB-00009",
+          "batchNumber": "B00009",
+          "partNumber": "PM-00008",
+          "partTitle": "Kondensator 100uF X7R",
+          "receivedDate": "2026-02-03",
+          "qty": 600,
+          "status": "bad",
+          "events": 28
+        },
+        {
+          "batchId": "SB-00010",
+          "batchNumber": "B00010",
+          "partNumber": "PM-00008",
+          "partTitle": "Kondensator 100uF X7R",
+          "receivedDate": "2026-03-01",
+          "qty": 400,
+          "status": "suspect",
+          "events": 5
+        }
+      ]
+    },
+    "sup-02": {
+      "supplierId": "SUP-02",
+      "supplierName": "Mechanik-Werk AG",
+      "country": null,
+      "partMasters": [
+        {
+          "partNumber": "PM-00002",
+          "title": "Kondensator 47uF 25V",
+          "commodity": "capacitor",
+          "emojiCode": "1f50b"
+        },
+        {
+          "partNumber": "PM-00012",
+          "title": "Schrauben M3x8 verz.",
+          "commodity": "fastener",
+          "emojiCode": "1f529"
+        },
+        {
+          "partNumber": "PM-00010",
+          "title": "Stecker 10-pin SPH",
+          "commodity": "connector",
+          "emojiCode": "1f50c"
+        },
+        {
+          "partNumber": "PM-00011",
+          "title": "Gehaeuse Aluminium A200",
+          "commodity": "housing",
+          "emojiCode": "1f4e6"
+        }
+      ],
+      "batches": [
+        {
+          "batchId": "SB-00002",
+          "batchNumber": "B00002",
+          "partNumber": "PM-00002",
+          "partTitle": "Kondensator 47uF 25V",
+          "receivedDate": "2025-09-20",
+          "qty": 400,
+          "status": "bad",
+          "events": 37
+        },
+        {
+          "batchId": "SB-00014",
+          "batchNumber": "B00014",
+          "partNumber": "PM-00012",
+          "partTitle": "Schrauben M3x8 verz.",
+          "receivedDate": "2025-10-01",
+          "qty": 1000,
+          "status": "ok",
+          "events": 0
+        },
+        {
+          "batchId": "SB-00012",
+          "batchNumber": "B00012",
+          "partNumber": "PM-00010",
+          "partTitle": "Stecker 10-pin SPH",
+          "receivedDate": "2025-10-08",
+          "qty": 400,
+          "status": "ok",
+          "events": 0
+        },
+        {
+          "batchId": "SB-00013",
+          "batchNumber": "B00013",
+          "partNumber": "PM-00011",
+          "partTitle": "Gehaeuse Aluminium A200",
+          "receivedDate": "2025-10-10",
+          "qty": 250,
+          "status": "ok",
+          "events": 0
+        }
+      ]
+    },
+    "sup-03": {
+      "supplierId": "SUP-03",
+      "supplierName": "TechSupply Europe",
+      "country": null,
+      "partMasters": [
+        {
+          "partNumber": "PM-00015",
+          "title": "Widerstand 4.7k Thermal",
+          "commodity": "resistor",
+          "emojiCode": "1f4a1"
+        },
+        {
+          "partNumber": "PM-00003",
+          "title": "Widerstand 100R 0.25W",
+          "commodity": "resistor",
+          "emojiCode": "1f4a1"
+        },
+        {
+          "partNumber": "PM-00004",
+          "title": "Widerstand 1k 0.25W",
+          "commodity": "resistor",
+          "emojiCode": "1f4a1"
+        },
+        {
+          "partNumber": "PM-00014",
+          "title": "Platine Basis PCB-4L",
+          "commodity": "pcb",
+          "emojiCode": "1f7e9"
+        },
+        {
+          "partNumber": "PM-00016",
+          "title": "Optokoppler PC817",
+          "commodity": "ic",
+          "emojiCode": "1f9e0"
+        },
+        {
+          "partNumber": "PM-00019",
+          "title": "Display OLED 128x64",
+          "commodity": "display",
+          "emojiCode": "1f4fa"
+        }
+      ],
+      "batches": [
+        {
+          "batchId": "SB-00017",
+          "batchNumber": "B00017",
+          "partNumber": "PM-00015",
+          "partTitle": "Widerstand 4.7k Thermal",
+          "receivedDate": "2025-09-25",
+          "qty": 400,
+          "status": "bad",
+          "events": 34
+        },
+        {
+          "batchId": "SB-00003",
+          "batchNumber": "B00003",
+          "partNumber": "PM-00003",
+          "partTitle": "Widerstand 100R 0.25W",
+          "receivedDate": "2025-10-05",
+          "qty": 600,
+          "status": "suspect",
+          "events": 3
+        },
+        {
+          "batchId": "SB-00004",
+          "batchNumber": "B00004",
+          "partNumber": "PM-00004",
+          "partTitle": "Widerstand 1k 0.25W",
+          "receivedDate": "2025-10-05",
+          "qty": 500,
+          "status": "ok",
+          "events": 0
+        },
+        {
+          "batchId": "SB-00016",
+          "batchNumber": "B00016",
+          "partNumber": "PM-00014",
+          "partTitle": "Platine Basis PCB-4L",
+          "receivedDate": "2025-10-20",
+          "qty": 300,
+          "status": "ok",
+          "events": 0
+        },
+        {
+          "batchId": "SB-00018",
+          "batchNumber": "B00018",
+          "partNumber": "PM-00016",
+          "partTitle": "Optokoppler PC817",
+          "receivedDate": "2025-10-25",
+          "qty": 250,
+          "status": "suspect",
+          "events": 3
+        },
+        {
+          "batchId": "SB-00021",
+          "batchNumber": "B00021",
+          "partNumber": "PM-00019",
+          "partTitle": "Display OLED 128x64",
+          "receivedDate": "2025-11-08",
+          "qty": 200,
+          "status": "ok",
+          "events": 0
+        }
+      ]
+    },
+    "sup-04": {
+      "supplierId": "SUP-04",
+      "supplierName": "PartStream Industries",
+      "country": null,
+      "partMasters": [
+        {
+          "partNumber": "PM-00005",
+          "title": "LED 5mm rot",
+          "commodity": "diode",
+          "emojiCode": "1f538"
+        },
+        {
+          "partNumber": "PM-00013",
+          "title": "Waermeleitpaste WLP-G",
+          "commodity": "consumable",
+          "emojiCode": "1f9f4"
+        },
+        {
+          "partNumber": "PM-00018",
+          "title": "Sicherung Traege T1A",
+          "commodity": "fuse",
+          "emojiCode": "1f4a5"
+        },
+        {
+          "partNumber": "PM-00020",
+          "title": "Tastatur-Modul 4x4",
+          "commodity": "input",
+          "emojiCode": "2328"
+        },
+        {
+          "partNumber": "PM-00009",
+          "title": "Diode Schottky SK34",
+          "commodity": "diode",
+          "emojiCode": "1f538"
+        }
+      ],
+      "batches": [
+        {
+          "batchId": "SB-00005",
+          "batchNumber": "B00005",
+          "partNumber": "PM-00005",
+          "partTitle": "LED 5mm rot",
+          "receivedDate": "2025-10-12",
+          "qty": 300,
+          "status": "suspect",
+          "events": 3
+        },
+        {
+          "batchId": "SB-00015",
+          "batchNumber": "B00015",
+          "partNumber": "PM-00013",
+          "partTitle": "Waermeleitpaste WLP-G",
+          "receivedDate": "2025-10-15",
+          "qty": 300,
+          "status": "ok",
+          "events": 0
+        },
+        {
+          "batchId": "SB-00020",
+          "batchNumber": "B00020",
+          "partNumber": "PM-00018",
+          "partTitle": "Sicherung Traege T1A",
+          "receivedDate": "2025-11-12",
+          "qty": 300,
+          "status": "suspect",
+          "events": 3
+        },
+        {
+          "batchId": "SB-00022",
+          "batchNumber": "B00022",
+          "partNumber": "PM-00020",
+          "partTitle": "Tastatur-Modul 4x4",
+          "receivedDate": "2025-11-18",
+          "qty": 200,
+          "status": "ok",
+          "events": 1
+        },
+        {
+          "batchId": "SB-00011",
+          "batchNumber": "B00011",
+          "partNumber": "PM-00009",
+          "partTitle": "Diode Schottky SK34",
+          "receivedDate": "2025-11-20",
+          "qty": 300,
+          "status": "bad",
+          "events": 39
+        }
+      ]
+    }
+  },
+  "factoryDetails": {
+    "fac-aug": {
+      "factoryId": "FAC-00001",
+      "name": "Werk Augsburg",
+      "country": "DE",
+      "siteCode": "AUG",
+      "lines": [
+        {
+          "lineId": "LIN-00001",
+          "name": "Linie 1",
+          "lineType": "assembly",
+          "area": "North",
+          "sections": [
+            {
+              "sectionId": "SEC-00001",
+              "name": "Montage Linie 1",
+              "sectionType": "montage",
+              "sequenceNo": 1,
+              "testCount": 0,
+              "caseFlag": {
+                "kind": "operator",
+                "title": "Bediener user_042 – kosmetische Defekte (LABEL_MISALIGN, VISUAL_SCRATCH)",
+                "detail": "Bediener user_042 verursachte in PO-00012, PO-00018, PO-00024 insgesamt 15 kosmetische Defekte (8× LABEL_MISALIGN, 4× VISUAL_SCRATCH). Höchste Aktivität in SEC-00001 (54 Installationen). Kein Sicherheitsrisiko – kosmetische Abweichungen."
+              }
+            },
+            {
+              "sectionId": "SEC-00002",
+              "name": "Pruefung Linie 1",
+              "sectionType": "pruefung",
+              "sequenceNo": 2,
+              "testCount": 7,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00003",
+              "name": "Verpackung Linie 1",
+              "sectionType": "verpackung",
+              "sequenceNo": 3,
+              "testCount": 1,
+              "caseFlag": null
+            }
+          ]
+        },
+        {
+          "lineId": "LIN-00002",
+          "name": "Linie 2",
+          "lineType": "assembly",
+          "area": "South",
+          "sections": [
+            {
+              "sectionId": "SEC-00004",
+              "name": "Montage Linie 2",
+              "sectionType": "montage",
+              "sequenceNo": 1,
+              "testCount": 0,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00005",
+              "name": "Pruefung Linie 2",
+              "sectionType": "pruefung",
+              "sequenceNo": 2,
+              "testCount": 0,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00006",
+              "name": "Verpackung Linie 2",
+              "sectionType": "verpackung",
+              "sequenceNo": 3,
+              "testCount": 0,
+              "caseFlag": null
+            }
+          ]
+        }
+      ]
+    },
+    "fac-dre": {
+      "factoryId": "FAC-00002",
+      "name": "Werk Dresden",
+      "country": "DE",
+      "siteCode": "DRE",
+      "lines": [
+        {
+          "lineId": "LIN-00003",
+          "name": "Linie 1",
+          "lineType": "test",
+          "area": "East",
+          "sections": [
+            {
+              "sectionId": "SEC-00007",
+              "name": "Montage Linie 1",
+              "sectionType": "montage",
+              "sequenceNo": 1,
+              "testCount": 0,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00008",
+              "name": "Pruefung Linie 1",
+              "sectionType": "pruefung",
+              "sequenceNo": 2,
+              "testCount": 0,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00009",
+              "name": "Verpackung Linie 1",
+              "sectionType": "verpackung",
+              "sequenceNo": 3,
+              "testCount": 0,
+              "caseFlag": null
+            }
+          ]
+        },
+        {
+          "lineId": "LIN-00004",
+          "name": "Linie 2",
+          "lineType": "packaging",
+          "area": "West",
+          "sections": [
+            {
+              "sectionId": "SEC-00010",
+              "name": "Montage Linie 2",
+              "sectionType": "montage",
+              "sequenceNo": 1,
+              "testCount": 0,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00011",
+              "name": "Pruefung Linie 2",
+              "sectionType": "pruefung",
+              "sequenceNo": 2,
+              "testCount": 0,
+              "caseFlag": null
+            },
+            {
+              "sectionId": "SEC-00012",
+              "name": "Verpackung Linie 2",
+              "sectionType": "verpackung",
+              "sequenceNo": 3,
+              "testCount": 0,
+              "caseFlag": null
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "articleCatalog": [
+    {
+      "articleId": "ART-00001",
+      "name": "Motor Controller MC-200",
+      "emojiCode": "1f699",
+      "bomId": "BOM-00001",
+      "bomVersion": "1.0",
+      "assemblies": [
+        {
+          "bomNodeId": "BN-00001",
+          "name": "Steuerplatine",
+          "components": [
+            {
+              "bomNodeId": "BN-00002",
+              "findNumber": "U1",
+              "partNumber": "PM-00006",
+              "partTitle": "Mikrocontroller STM32F4",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00003",
+              "findNumber": "C12",
+              "partNumber": "PM-00008",
+              "partTitle": "Kondensator 100uF X7R",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": "supply-issue"
+            },
+            {
+              "bomNodeId": "BN-00004",
+              "findNumber": "R33",
+              "partNumber": "PM-00015",
+              "partTitle": "Widerstand 4.7k Thermal",
+              "commodity": "resistor",
+              "qty": 1.0,
+              "flag": "design-issue"
+            },
+            {
+              "bomNodeId": "BN-00005",
+              "findNumber": "U2",
+              "partNumber": "PM-00007",
+              "partTitle": "Spannungsregler LM7805",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00006",
+          "name": "Leistungsstufe",
+          "components": [
+            {
+              "bomNodeId": "BN-00007",
+              "findNumber": "C5",
+              "partNumber": "PM-00002",
+              "partTitle": "Kondensator 47uF 25V",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00008",
+              "findNumber": "D1",
+              "partNumber": "PM-00009",
+              "partTitle": "Diode Schottky SK34",
+              "commodity": "diode",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00009",
+              "findNumber": "K1",
+              "partNumber": "PM-00017",
+              "partTitle": "Relais 12V SPDT",
+              "commodity": "relay",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00010",
+          "name": "Gehaeuse_IO",
+          "components": [
+            {
+              "bomNodeId": "BN-00011",
+              "findNumber": "H1",
+              "partNumber": "PM-00011",
+              "partTitle": "Gehaeuse Aluminium A200",
+              "commodity": "housing",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00012",
+              "findNumber": "J1",
+              "partNumber": "PM-00010",
+              "partTitle": "Stecker 10-pin SPH",
+              "commodity": "connector",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00013",
+              "findNumber": "SCR",
+              "partNumber": "PM-00012",
+              "partTitle": "Schrauben M3x8 verz.",
+              "commodity": "fastener",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "articleId": "ART-00002",
+      "name": "Sensor Unit SU-100",
+      "emojiCode": "1f4e1",
+      "bomId": "BOM-00002",
+      "bomVersion": "1.0",
+      "assemblies": [
+        {
+          "bomNodeId": "BN-00014",
+          "name": "Hauptplatine",
+          "components": [
+            {
+              "bomNodeId": "BN-00015",
+              "findNumber": "U1",
+              "partNumber": "PM-00006",
+              "partTitle": "Mikrocontroller STM32F4",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00016",
+              "findNumber": "C1",
+              "partNumber": "PM-00001",
+              "partTitle": "Kondensator 10uF 16V",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00017",
+              "findNumber": "R1",
+              "partNumber": "PM-00003",
+              "partTitle": "Widerstand 100R 0.25W",
+              "commodity": "resistor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00018",
+              "findNumber": "OC1",
+              "partNumber": "PM-00016",
+              "partTitle": "Optokoppler PC817",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00019",
+          "name": "Sensorik",
+          "components": [
+            {
+              "bomNodeId": "BN-00020",
+              "findNumber": "D1",
+              "partNumber": "PM-00009",
+              "partTitle": "Diode Schottky SK34",
+              "commodity": "diode",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00021",
+              "findNumber": "LED",
+              "partNumber": "PM-00005",
+              "partTitle": "LED 5mm rot",
+              "commodity": "diode",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00022",
+              "findNumber": "C2",
+              "partNumber": "PM-00001",
+              "partTitle": "Kondensator 10uF 16V",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00023",
+          "name": "Gehaeuse",
+          "components": [
+            {
+              "bomNodeId": "BN-00024",
+              "findNumber": "H1",
+              "partNumber": "PM-00011",
+              "partTitle": "Gehaeuse Aluminium A200",
+              "commodity": "housing",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00025",
+              "findNumber": "J1",
+              "partNumber": "PM-00010",
+              "partTitle": "Stecker 10-pin SPH",
+              "commodity": "connector",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00026",
+              "findNumber": "SCR",
+              "partNumber": "PM-00012",
+              "partTitle": "Schrauben M3x8 verz.",
+              "commodity": "fastener",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "articleId": "ART-00003",
+      "name": "Power Distribution PD-300",
+      "emojiCode": "26a1",
+      "bomId": "BOM-00003",
+      "bomVersion": "1.0",
+      "assemblies": [
+        {
+          "bomNodeId": "BN-00027",
+          "name": "Leistungsteil",
+          "components": [
+            {
+              "bomNodeId": "BN-00028",
+              "findNumber": "U1",
+              "partNumber": "PM-00007",
+              "partTitle": "Spannungsregler LM7805",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00029",
+              "findNumber": "C1",
+              "partNumber": "PM-00002",
+              "partTitle": "Kondensator 47uF 25V",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00030",
+              "findNumber": "D1",
+              "partNumber": "PM-00009",
+              "partTitle": "Diode Schottky SK34",
+              "commodity": "diode",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00031",
+              "findNumber": "F1",
+              "partNumber": "PM-00018",
+              "partTitle": "Sicherung Traege T1A",
+              "commodity": "fuse",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00032",
+          "name": "Relais_Stufe",
+          "components": [
+            {
+              "bomNodeId": "BN-00033",
+              "findNumber": "K1",
+              "partNumber": "PM-00017",
+              "partTitle": "Relais 12V SPDT",
+              "commodity": "relay",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00034",
+              "findNumber": "K2",
+              "partNumber": "PM-00017",
+              "partTitle": "Relais 12V SPDT",
+              "commodity": "relay",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00035",
+              "findNumber": "R1",
+              "partNumber": "PM-00004",
+              "partTitle": "Widerstand 1k 0.25W",
+              "commodity": "resistor",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00036",
+          "name": "Gehaeuse",
+          "components": [
+            {
+              "bomNodeId": "BN-00037",
+              "findNumber": "H1",
+              "partNumber": "PM-00011",
+              "partTitle": "Gehaeuse Aluminium A200",
+              "commodity": "housing",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00038",
+              "findNumber": "J1",
+              "partNumber": "PM-00010",
+              "partTitle": "Stecker 10-pin SPH",
+              "commodity": "connector",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00039",
+              "findNumber": "SCR",
+              "partNumber": "PM-00012",
+              "partTitle": "Schrauben M3x8 verz.",
+              "commodity": "fastener",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "articleId": "ART-00004",
+      "name": "Controller Board CB-150",
+      "emojiCode": "1f5a5",
+      "bomId": "BOM-00004",
+      "bomVersion": "1.0",
+      "assemblies": [
+        {
+          "bomNodeId": "BN-00040",
+          "name": "Hauptplatine",
+          "components": [
+            {
+              "bomNodeId": "BN-00041",
+              "findNumber": "U1",
+              "partNumber": "PM-00006",
+              "partTitle": "Mikrocontroller STM32F4",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00042",
+              "findNumber": "C1",
+              "partNumber": "PM-00001",
+              "partTitle": "Kondensator 10uF 16V",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00043",
+              "findNumber": "R1",
+              "partNumber": "PM-00003",
+              "partTitle": "Widerstand 100R 0.25W",
+              "commodity": "resistor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00044",
+              "findNumber": "PCB",
+              "partNumber": "PM-00014",
+              "partTitle": "Platine Basis PCB-4L",
+              "commodity": "pcb",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00045",
+          "name": "Schnittstelle",
+          "components": [
+            {
+              "bomNodeId": "BN-00046",
+              "findNumber": "OC1",
+              "partNumber": "PM-00016",
+              "partTitle": "Optokoppler PC817",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00047",
+              "findNumber": "J1",
+              "partNumber": "PM-00010",
+              "partTitle": "Stecker 10-pin SPH",
+              "commodity": "connector",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00048",
+              "findNumber": "LED",
+              "partNumber": "PM-00005",
+              "partTitle": "LED 5mm rot",
+              "commodity": "diode",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00049",
+          "name": "Montage",
+          "components": [
+            {
+              "bomNodeId": "BN-00050",
+              "findNumber": "H1",
+              "partNumber": "PM-00011",
+              "partTitle": "Gehaeuse Aluminium A200",
+              "commodity": "housing",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00051",
+              "findNumber": "SCR",
+              "partNumber": "PM-00012",
+              "partTitle": "Schrauben M3x8 verz.",
+              "commodity": "fastener",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00052",
+              "findNumber": "TIM",
+              "partNumber": "PM-00013",
+              "partTitle": "Waermeleitpaste WLP-G",
+              "commodity": "consumable",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "articleId": "ART-00005",
+      "name": "Gateway Module GM-400",
+      "emojiCode": "1f4e1",
+      "bomId": "BOM-00005",
+      "bomVersion": "1.0",
+      "assemblies": [
+        {
+          "bomNodeId": "BN-00053",
+          "name": "Funkteil",
+          "components": [
+            {
+              "bomNodeId": "BN-00054",
+              "findNumber": "U1",
+              "partNumber": "PM-00006",
+              "partTitle": "Mikrocontroller STM32F4",
+              "commodity": "ic",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00055",
+              "findNumber": "C1",
+              "partNumber": "PM-00001",
+              "partTitle": "Kondensator 10uF 16V",
+              "commodity": "capacitor",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00056",
+              "findNumber": "R1",
+              "partNumber": "PM-00004",
+              "partTitle": "Widerstand 1k 0.25W",
+              "commodity": "resistor",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00057",
+          "name": "Anzeige",
+          "components": [
+            {
+              "bomNodeId": "BN-00058",
+              "findNumber": "DSP",
+              "partNumber": "PM-00019",
+              "partTitle": "Display OLED 128x64",
+              "commodity": "display",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00059",
+              "findNumber": "KB",
+              "partNumber": "PM-00020",
+              "partTitle": "Tastatur-Modul 4x4",
+              "commodity": "input",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00060",
+              "findNumber": "LED",
+              "partNumber": "PM-00005",
+              "partTitle": "LED 5mm rot",
+              "commodity": "diode",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        },
+        {
+          "bomNodeId": "BN-00061",
+          "name": "Gehaeuse",
+          "components": [
+            {
+              "bomNodeId": "BN-00062",
+              "findNumber": "H1",
+              "partNumber": "PM-00011",
+              "partTitle": "Gehaeuse Aluminium A200",
+              "commodity": "housing",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00063",
+              "findNumber": "J1",
+              "partNumber": "PM-00010",
+              "partTitle": "Stecker 10-pin SPH",
+              "commodity": "connector",
+              "qty": 1.0,
+              "flag": null
+            },
+            {
+              "bomNodeId": "BN-00064",
+              "findNumber": "SCR",
+              "partNumber": "PM-00012",
+              "partTitle": "Schrauben M3x8 verz.",
+              "commodity": "fastener",
+              "qty": 1.0,
+              "flag": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fieldClaims": [
+    {
+      "claimId": "FC-00012",
+      "productId": "PRD-00013",
+      "articleId": "ART-00001",
+      "complaintText": "Multiple MC-200 failures. The units are failing after thermal cycling in the enclosure. C12 (100uF) seems to be the point of failure every time. We noticed the ElektroParts logo on the caps. We need a solution before we ship the next 50 units.",
+      "market": "US",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00004",
+      "productId": "PRD-00009",
+      "articleId": "ART-00001",
+      "complaintText": "System outage reported at the client site. MC-200 unit stopped working out of nowhere. No error codes, just no power. Opened it up and C12 looks scorched. We suspect the ElektroParts components are the culprit here. Pls advise on RMA process.",
+      "market": "US",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00030",
+      "productId": "PRD-00448",
+      "articleId": "ART-00005",
+      "complaintText": "The firmware version on the new units is out of date. We were promised v2.1 but received v1.9. We now have to manually update each unit before installation. This is a waste of our time. Please ensure the correct firmware is loaded next time.",
+      "market": "DE",
+      "buildAgeWeeks": 9,
+      "reportedPart": "PM-00004"
+    },
+    {
+      "claimId": "FC-00013",
+      "productId": "PRD-00162",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 units are not holding their calibration. After 2-3 months, the R33 resistor drifts and the unit becomes unstable. This is especially noticeable at higher temperatures. Performance is not meeting spec. What are our options for repair?",
+      "market": "DE",
+      "buildAgeWeeks": 8,
+      "reportedPart": "PM-00015"
+    },
+    {
+      "claimId": "FC-00028",
+      "productId": "PRD-00094",
+      "articleId": "ART-00001",
+      "complaintText": "Instruction manual is missing from the box. We have new techs who need the wiring diagram. Can you send a PDF or physical copies? This is basic stuff that should be in every box. Thanks.",
+      "market": "FR",
+      "buildAgeWeeks": 11,
+      "reportedPart": "PM-00007"
+    },
+    {
+      "claimId": "FC-00017",
+      "productId": "PRD-00083",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 units are failing after 8 weeks. Symptoms include intermittent instability and reduced performance. We suspect R33 thermal drift is the root cause. The units behave differently when they are hot vs cold. This is unacceptable for our application.",
+      "market": "ES",
+      "buildAgeWeeks": 8,
+      "reportedPart": "PM-00015"
+    },
+    {
+      "claimId": "FC-00005",
+      "productId": "PRD-00023",
+      "articleId": "ART-00001",
+      "complaintText": "Severe failure rates on the MC-200 line. Units are blacking out after thermal cycles. The C12 cap (100uF) is clearly the weak link. We believe the ElektroParts supply is defective. We cannot accept any more units with these components installed.",
+      "market": "US",
+      "buildAgeWeeks": 8,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00001",
+      "productId": "PRD-00007",
+      "articleId": "ART-00001",
+      "complaintText": "We are experiencing a total failure on three MC-200 units installed last month. The system just went dark during a standard thermal cycle test. It seems the C12 capacitor (100uF) is leaking or shorted. This is the second time this week. Please investigate the ElektroParts batch immediately.",
+      "market": "FR",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00011",
+      "productId": "PRD-00026",
+      "articleId": "ART-00001",
+      "complaintText": "Our field service team is reporting multiple MC-200 outages. The units die abruptly after a couple of weeks. Looks like the C12 100uF capacitor from ElektroParts is failing due to heat cycling. We need a formal Root Cause Analysis for this supplier issue.",
+      "market": "DE",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00032",
+      "productId": "PRD-00022",
+      "articleId": "ART-00001",
+      "complaintText": "Intermittent disconnects on the RS485 port. The connector feels loose on several units. We have to wiggle the cable to get a signal. This is not acceptable for an industrial environment. Please advise on a fix.",
+      "market": "US",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00002"
+    },
+    {
+      "claimId": "FC-00025",
+      "productId": "PRD-00167",
+      "articleId": "ART-00001",
+      "complaintText": "The enclosure color is different from the last order. These are supposed to be light gray, but they are dark gray. It doesn't match our existing equipment. Why did the color change? Please confirm the spec.",
+      "market": "DE",
+      "buildAgeWeeks": 8,
+      "reportedPart": "PM-00009"
+    },
+    {
+      "claimId": "FC-00002",
+      "productId": "PRD-00015",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 unit dead on arrival after 2 weeks in field. Sudden outage during normal operation. The C12 cap appears to have failed under thermal stress. Are you guys still using ElektroParts for the 100uF capacitors? We had better luck with the previous supplier.",
+      "market": "DE",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00038",
+      "productId": "PRD-00082",
+      "articleId": "ART-00001",
+      "complaintText": "The enclosure color is different from the last order. These are supposed to be light gray, but they are dark gray. It doesn't match our existing equipment. Why did the color change? Please confirm the spec.",
+      "market": "DE",
+      "buildAgeWeeks": 14,
+      "reportedPart": "PM-00007"
+    },
+    {
+      "claimId": "FC-00015",
+      "productId": "PRD-00039",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 performance is degrading over time. After 3 months, the units are not as precise. We suspect R33 thermal drift is causing the instability. It seems to get worse as the unit heats up. Can we swap these out for high-precision resistors?",
+      "market": "DE",
+      "buildAgeWeeks": 10,
+      "reportedPart": "PM-00015"
+    },
+    {
+      "claimId": "FC-00024",
+      "productId": "PRD-00080",
+      "articleId": "ART-00001",
+      "complaintText": "Power supply terminal block is stripped on one unit. We can't tighten the wire down. It seems the screw was over-torqued at the factory. Please send a replacement unit or a new terminal block. This is a quality control issue.",
+      "market": "IT",
+      "buildAgeWeeks": 11,
+      "reportedPart": "PM-00007"
+    },
+    {
+      "claimId": "FC-00007",
+      "productId": "PRD-00024",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 units failing after 200 hours of use. Symptoms: sudden outage, no LED activity. Inspection shows C12 (100uF) capacitor has failed. These ElektroParts components are not suitable for our thermal environment. Please send replacements with a different cap brand.",
+      "market": "US",
+      "buildAgeWeeks": 6,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00003",
+      "productId": "PRD-00005",
+      "articleId": "ART-00001",
+      "complaintText": "Found a pattern of failures in the MC-200 series. Units run fine for 15 days then die after the temp cycling phase. Its always the C12 100uF capacitor. Is there a known issue with the supplier ElektroParts? This is causing major downtime for us.",
+      "market": "IT",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00037",
+      "productId": "PRD-00056",
+      "articleId": "ART-00001",
+      "complaintText": "Power supply terminal block is stripped on one unit. We can't tighten the wire down. It seems the screw was over-torqued at the factory. Please send a replacement unit or a new terminal block. This is a quality control issue.",
+      "market": "IT",
+      "buildAgeWeeks": 11,
+      "reportedPart": "PM-00002"
+    },
+    {
+      "claimId": "FC-00031",
+      "productId": "PRD-00199",
+      "articleId": "ART-00002",
+      "complaintText": "Unit is blowing the internal fuse as soon as it's powered on. We've checked our wiring and it's correct. It seems like a short circuit inside the unit. This is the 3rd unit this week. Please investigate.",
+      "market": "US",
+      "buildAgeWeeks": 10,
+      "reportedPart": "PM-00006"
+    },
+    {
+      "claimId": "FC-00010",
+      "productId": "PRD-00002",
+      "articleId": "ART-00001",
+      "complaintText": "Customer is complaining about MC-200 units failing early. They run for a few weeks and then just stop. Initial teardown shows C12 is dead. This 100uF part from ElektroParts isnt holding up to thermal cycling. What is the plan for remediation?",
+      "market": "IT",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00006",
+      "productId": "PRD-00021",
+      "articleId": "ART-00001",
+      "complaintText": "Urgent issue with MC-200 motor controllers. After about 3 weeks of operation, units are losing power completely. Our tech found that the 100uF cap at C12 is blown. Are these parts from ElektroParts? We need replacements that dont fail during heat cycles.",
+      "market": "IT",
+      "buildAgeWeeks": 4,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00009",
+      "productId": "PRD-00003",
+      "articleId": "ART-00001",
+      "complaintText": "Having issues with MC-200 controllers. 4 units failed this morning after the overnight thermal cycle. Total power loss. Our engineer points to C12 (100uF) failure. This ElektroParts batch is looking very suspicious. Need an ETA on fixed units.",
+      "market": "FR",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00014",
+      "productId": "PRD-00037",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 units are showing gradual performance loss. After about 12 weeks, the R33 resistor starts to drift. This causes intermittent instability in the motor control. We need units that can handle the thermal load without drifting. Please respond.",
+      "market": "IT",
+      "buildAgeWeeks": 11,
+      "reportedPart": "PM-00015"
+    },
+    {
+      "claimId": "FC-00008",
+      "productId": "PRD-00020",
+      "articleId": "ART-00001",
+      "complaintText": "MC-200 failure report. Unit failed during thermal cycle test. Investigation revealed C12 cap (100uF) is open circuit. Supplier marked as ElektroParts. This is the 5th unit this month. Please expedite the warranty claim.",
+      "market": "FR",
+      "buildAgeWeeks": 4,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00029",
+      "productId": "PRD-00257",
+      "articleId": "ART-00002",
+      "complaintText": "The LED display on the sensor unit is flickering. It's hard to read the values. This is happening on multiple units in the same batch. We suspect a loose connection or a bad driver. Please look into this.",
+      "market": "UK",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00009"
+    },
+    {
+      "claimId": "FC-00034",
+      "productId": "PRD-00023",
+      "articleId": "ART-00001",
+      "complaintText": "Missing mounting screws in the package. 10 units arrived without the hardware kit. We can't install them without the screws. This is delaying our project. Please send the missing hardware via overnight shipping.",
+      "market": "UK",
+      "buildAgeWeeks": 4,
+      "reportedPart": "PM-00002"
+    },
+    {
+      "claimId": "FC-00019",
+      "productId": "PRD-00246",
+      "articleId": "ART-00002",
+      "complaintText": "Intermittent disconnects on the RS485 port. The connector feels loose on several units. We have to wiggle the cable to get a signal. This is not acceptable for an industrial environment. Please advise on a fix.",
+      "market": "DE",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00016"
+    },
+    {
+      "claimId": "FC-00016",
+      "productId": "PRD-00084",
+      "articleId": "ART-00001",
+      "complaintText": "Customer reports MC-200 instability. The unit works fine for the first 2 months, then starts acting erratic. We believe R33 resistor is the cause of this thermal drift. Performance is significantly reduced when the cabinet gets warm. We need a fix ASAP.",
+      "market": "PL",
+      "buildAgeWeeks": 9,
+      "reportedPart": "PM-00015"
+    },
+    {
+      "claimId": "FC-00020",
+      "productId": "PRD-00079",
+      "articleId": "ART-00001",
+      "complaintText": "The fan on the motor controller is making a loud grinding noise. It sounds like a bearing failure. We've had 2 units with this issue in the first week. Is this a common problem? We need quiet and reliable fans.",
+      "market": "FR",
+      "buildAgeWeeks": 6,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00039",
+      "productId": "PRD-00170",
+      "articleId": "ART-00001",
+      "complaintText": "Software interface is crashing when we try to save settings. This is happening on all the new units. We need a patch or a workaround. Our production is stalled until we can configure these controllers.",
+      "market": "IT",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00002"
+    },
+    {
+      "claimId": "FC-00021",
+      "productId": "PRD-00141",
+      "articleId": "ART-00001",
+      "complaintText": "Missing mounting screws in the package. 10 units arrived without the hardware kit. We can't install them without the screws. This is delaying our project. Please send the missing hardware via overnight shipping.",
+      "market": "US",
+      "buildAgeWeeks": 3,
+      "reportedPart": "PM-00008"
+    },
+    {
+      "claimId": "FC-00027",
+      "productId": "PRD-00124",
+      "articleId": "ART-00001",
+      "complaintText": "The housing on the latest batch of motor controllers is cracked. It looks like the plastic is too brittle. We found 3 units with damage right out of the box. Please send replacements and check your QC process.",
+      "market": "US",
+      "buildAgeWeeks": 12,
+      "reportedPart": "PM-00002"
+    },
+    {
+      "claimId": "FC-00018",
+      "productId": "PRD-00200",
+      "articleId": "ART-00002",
+      "complaintText": "Unit is blowing the internal fuse as soon as it's powered on. We've checked our wiring and it's correct. It seems like a short circuit inside the unit. This is the 3rd unit this week. Please investigate.",
+      "market": "IT",
+      "buildAgeWeeks": 11,
+      "reportedPart": "PM-00016"
+    },
+    {
+      "claimId": "FC-00035",
+      "productId": "PRD-00238",
+      "articleId": "ART-00002",
+      "complaintText": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or RMA the whole batch. This is a simple mistake that should have been caught.",
+      "market": "UK",
+      "buildAgeWeeks": 3,
+      "reportedPart": "PM-00001"
+    },
+    {
+      "claimId": "FC-00022",
+      "productId": "PRD-00146",
+      "articleId": "ART-00001",
+      "complaintText": "Wrong labels on the sensor units. The part numbers don't match the documentation. This is causing confusion in our warehouse. Please send the correct labels or RMA the whole batch. This is a simple mistake that should have been caught.",
+      "market": "UK",
+      "buildAgeWeeks": 15,
+      "reportedPart": "PM-00009"
+    },
+    {
+      "claimId": "FC-00040",
+      "productId": "PRD-00218",
+      "articleId": "ART-00002",
+      "complaintText": "The housing on the latest batch of motor controllers is cracked. It looks like the plastic is too brittle. We found 3 units with damage right out of the box. Please send replacements and check your QC process.",
+      "market": "UK",
+      "buildAgeWeeks": 7,
+      "reportedPart": "PM-00016"
+    },
+    {
+      "claimId": "FC-00026",
+      "productId": "PRD-00263",
+      "articleId": "ART-00003",
+      "complaintText": "Software interface is crashing when we try to save settings. This is happening on all the new units. We need a patch or a workaround. Our production is stalled until we can configure these controllers.",
+      "market": "UK",
+      "buildAgeWeeks": 14,
+      "reportedPart": "PM-00017"
+    },
+    {
+      "claimId": "FC-00033",
+      "productId": "PRD-00334",
+      "articleId": "ART-00003",
+      "complaintText": "The fan on the motor controller is making a loud grinding noise. It sounds like a bearing failure. We've had 2 units with this issue in the first week. Is this a common problem? We need quiet and reliable fans.",
+      "market": "IT",
+      "buildAgeWeeks": 14,
+      "reportedPart": "PM-00018"
+    },
+    {
+      "claimId": "FC-00036",
+      "productId": "PRD-00322",
+      "articleId": "ART-00003",
+      "complaintText": "The RJ45 port is misaligned with the housing. We can't plug in the ethernet cable. It looks like the PCB is not seated correctly. We need to return these units for repair. Please send the RMA info.",
+      "market": "US",
+      "buildAgeWeeks": 5,
+      "reportedPart": "PM-00009"
+    },
+    {
+      "claimId": "FC-00023",
+      "productId": "PRD-00370",
+      "articleId": "ART-00004",
+      "complaintText": "The RJ45 port is misaligned with the housing. We can't plug in the ethernet cable. It looks like the PCB is not seated correctly. We need to return these units for repair. Please send the RMA info.",
+      "market": "IT",
+      "buildAgeWeeks": 8,
+      "reportedPart": "PM-00016"
+    }
+  ],
+  "atRiskProducts": [
+    {
+      "productId": "PRD-00039",
+      "articleId": "ART-00001",
+      "reason": "design",
+      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00015 (DE).",
+      "buildAgeWeeks": 15,
+      "market": "DE"
+    },
+    {
+      "productId": "PRD-00082",
+      "articleId": "ART-00001",
+      "reason": "design",
+      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00038 (DE).",
+      "buildAgeWeeks": 20,
+      "market": "DE"
+    },
+    {
+      "productId": "PRD-00083",
+      "articleId": "ART-00001",
+      "reason": "design",
+      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00017 (ES).",
+      "buildAgeWeeks": 11,
+      "market": "ES"
+    },
+    {
+      "productId": "PRD-00084",
+      "articleId": "ART-00001",
+      "reason": "design",
+      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00016 (PL).",
+      "buildAgeWeeks": 18,
+      "market": "PL"
+    },
+    {
+      "productId": "PRD-00162",
+      "articleId": "ART-00001",
+      "reason": "design",
+      "reasonDetail": "R33 (PM-00015, Widerstand 4.7kΩ) Thermaldrift – Ausfall nach 8–12 Wochen Feldbetrieb erwartet. Feldbeschwerde FC-00013 (DE).",
+      "buildAgeWeeks": 11,
+      "market": "DE"
+    }
+  ],
+  "investigations": [
+    {
+      "id": "INV-001",
+      "severity": "critical",
+      "title": "Lieferantendefekt: ElektroParts Kondensator 100uF X7R (PM-00008) – Kalte Lötstellen / Thermischer Ausfall",
+      "source": "Lieferant / Feldrückmeldungen",
+      "summary": "Batches SB-00009 (28 Defekte) und SB-00010 (5 Defekte) des ElektroParts-Kondensators 100uF X7R (PM-00008, BOM-Position C12, ART-00001) zeigen eine kritische Fehlerrate. 14 Feldbeschwerden bestätigen Totalausfälle nach thermischen Zyklen (typisch 21–56 Tage nach Inbetriebnahme) in den Märkten DE, FR, IT, US. Kunden berichten übereinstimmend von verbrannten oder offenen C12-Kondensatoren. Sofortige Sperrung des Lieferantenbatches und Feldrückruf der betroffenen Produkte empfohlen.",
+      "defects": 33,
+      "claims": 14,
+      "risk": 0.95,
+      "status": "Offen – Eskalation erforderlich",
+      "age": "12 Wochen",
+      "rootCause": "Fehlerhafter Lieferantenbatch (SB-00009, SB-00010) von ElektroParts GmbH: Kondensator 100uF X7R (PM-00008) versagt unter thermischer Belastung (Lötstellen-Kaltverbindung / Materialfehler). BOM-Position C12 in ART-00001 betroffen.",
+      "timeline": [
+        {
+          "date": "2025-10-28",
+          "event": "Erste Defekte mit PM-00008 (SB-00010) registriert",
+          "type": "defect"
+        },
+        {
+          "date": "2026-01-26",
+          "event": "Spike: SB-00009 – 28 Defekte in 25 Produkten (KW04–KW07)",
+          "type": "defect"
+        },
+        {
+          "date": "2026-02-01",
+          "event": "Erste Feldbeschwerde FC-00021: fehlende Teile, C12 verdächtigt (US)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-02-28",
+          "event": "FC-00008: C12 (100uF) Leerkreis bestätigt – 5. Einheit diesen Monat (FR)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-03-04",
+          "event": "FC-00009: 4 Einheiten nach Thermozyklus ausgefallen, ElektroParts-Batch verdächtig (FR)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-03-17",
+          "event": "FC-00001/FC-00011: Mehrfachausfälle DE/FR – formale Ursachenanalyse gefordert",
+          "type": "claim"
+        },
+        {
+          "date": "2026-04-03",
+          "event": "FC-00004/FC-00012: C12 verschmort – RMA-Prozess angefordert (US)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-04-19",
+          "event": "Automatische Erkennung durch Quality Co-Pilot – Batch SB-00009/SB-00010 gesperrt",
+          "type": "detection"
+        }
+      ],
+      "affectedProducts": [
+        {
+          "id": "PRD-00001",
+          "name": "PRD-00001"
+        },
+        {
+          "id": "PRD-00002",
+          "name": "PRD-00002"
+        },
+        {
+          "id": "PRD-00003",
+          "name": "PRD-00003"
+        },
+        {
+          "id": "PRD-00005",
+          "name": "PRD-00005"
+        },
+        {
+          "id": "PRD-00007",
+          "name": "PRD-00007"
+        },
+        {
+          "id": "PRD-00009",
+          "name": "PRD-00009"
+        },
+        {
+          "id": "PRD-00013",
+          "name": "PRD-00013"
+        },
+        {
+          "id": "PRD-00015",
+          "name": "PRD-00015"
+        },
+        {
+          "id": "PRD-00021",
+          "name": "PRD-00021"
+        },
+        {
+          "id": "PRD-00023",
+          "name": "PRD-00023"
+        },
+        {
+          "id": "PRD-00024",
+          "name": "PRD-00024"
+        },
+        {
+          "id": "PRD-00026",
+          "name": "PRD-00026"
+        }
+      ],
+      "suggestedActions": [
+        "Sofortige Sperrung und Quarantäne aller Bestände aus Batches SB-00009 und SB-00010 (ElektroParts PM-00008)",
+        "Feldrückruf aller ART-00001-Geräte aus betroffenen Produktions-KW (KW04–KW07/2026)",
+        "Lieferanten-Audit bei ElektroParts GmbH einleiten – Fokus auf Lötprozess und Materialzertifikate",
+        "Alternativlieferanten für PM-00008 (100uF X7R) qualifizieren",
+        "Formale 8D-Analyse mit ElektroParts anfordern",
+        "Kundenkommunikation vorbereiten: DE, FR, IT, US-Märkte informieren"
+      ]
+    },
+    {
+      "id": "INV-002",
+      "severity": "high",
+      "title": "Prozessdrift: Drehmomentschlüssel SEC-00001 (Montage Linie 1) – VIB_FAIL-Spike KW49–52/2025 (selbstkorrigiert)",
+      "source": "Fertigungsdefekte / Sektionsanalyse",
+      "summary": "In Sektion SEC-00001 (Montage Linie 1, fac-aug) wurde in KW49–52/2025 ein VIB_FAIL-Spike festgestellt: KW49 4 Defekte, KW50 6 Defekte, KW51 4 Defekte, KW52 6 Defekte – insgesamt 20 Defekte in 4 Wochen. Ursache ist ein fehlkalibrierter Drehmomentschlüssel. Keine aktuellen Defekte vorhanden – der Prozess hat sich selbst korrigiert. Nachkalibrierung und präventive Kalibrierprüfung aller Werkzeuge empfohlen.",
+      "defects": 20,
+      "claims": 0,
+      "risk": 0.35,
+      "status": "Selbstkorrigiert – Überwachung aktiv",
+      "age": "19 Wochen",
+      "rootCause": "Fehlkalibrierter Drehmomentschlüssel in SEC-00001 (Montage Linie 1, Augsburg). Spike in KW49–52/2025 mit 20 VIB_FAIL-Defekten. Kein Nachweis aktueller Defekte – Prozessdrift selbstkorrigiert.",
+      "timeline": [
+        {
+          "date": "2025-12-01",
+          "event": "KW49: 4 VIB_FAIL-Defekte in SEC-00001 (Montage Linie 1)",
+          "type": "defect"
+        },
+        {
+          "date": "2025-12-08",
+          "event": "KW50: 6 VIB_FAIL-Defekte – Spike-Höhepunkt",
+          "type": "defect"
+        },
+        {
+          "date": "2025-12-15",
+          "event": "KW51: 4 VIB_FAIL-Defekte – anhaltend erhöht",
+          "type": "defect"
+        },
+        {
+          "date": "2025-12-22",
+          "event": "KW52: 6 VIB_FAIL-Defekte – letzter Spike-Eintrag",
+          "type": "defect"
+        },
+        {
+          "date": "2026-04-19",
+          "event": "Automatische Erkennung – keine aktuellen Defekte, Selbstkorrektur bestätigt",
+          "type": "detection"
+        }
+      ],
+      "affectedProducts": [
+        {
+          "id": "fac-aug/SEC-00001",
+          "name": "Montage Linie 1 – Augsburg (SEC-00001)"
+        }
+      ],
+      "suggestedActions": [
+        "Nachkalibrierung aller Drehmomentschlüssel in SEC-00001 dokumentieren und bestätigen",
+        "Präventiven Kalibrierplan für alle Linie-1-Werkzeuge (fac-aug) einführen (monatlich)",
+        "VIB_FAIL-Rate in SEC-00001 weiterhin wöchentlich überwachen",
+        "Betroffene Chargen aus KW49–52/2025 auf latente Vibrationsschäden prüfen"
+      ]
+    },
+    {
+      "id": "INV-003",
+      "severity": "high",
+      "title": "Design-Fehler: Thermischer Drift R33 (PM-00015, Widerstand 4.7k) – Feldbeschwerden ART-00001",
+      "source": "Feldrückmeldungen / Keine Werksdefekte",
+      "summary": "5 Feldbeschwerden (FC-00013, FC-00015, FC-00016, FC-00017, FC-00038) berichten übereinstimmend von thermischem Drift des R33-Widerstands (PM-00015, 4.7kΩ) in ART-00001-Geräten nach 56–70 Tagen Betrieb. Keine entsprechenden Fabrikdefekte nachgewiesen – klassisches Design-Signaturmuster. Betroffene Märkte: DE, ES, PL. Lieferant TechSupply Europe (Batch SB-00017, 34 Defekte). BOM-Position BN-00004 in ART-00001 als Design-Issue markiert. Latente Feldbevölkerung im 8–12-Wochen-Alterfenster identifiziert.",
+      "defects": 0,
+      "claims": 5,
+      "risk": 0.72,
+      "status": "Offen – Designüberprüfung erforderlich",
+      "age": "10 Wochen",
+      "rootCause": "Designfehler: R33 (PM-00015, Widerstand 4.7kΩ Thermal, BN-00004/ART-00001) zeigt unzureichende Temperaturstabilität (thermischer Drift). Keine Fabrikdetektion möglich – Fehler manifestiert sich erst nach 8–12 Wochen Feldbetrieb unter thermischer Last.",
+      "timeline": [
+        {
+          "date": "2026-02-15",
+          "event": "FC-00016: Thermischer Drift R33 – Instabilität nach 2 Monaten (PL)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-03-12",
+          "event": "FC-00015: Präzisionsverlust nach 3 Monaten, R33 verdächtig (DE)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-03-26",
+          "event": "FC-00017: Intermittente Instabilität nach 8 Wochen, R33 Thermaldrift (ES)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-03-31",
+          "event": "FC-00013: Kalibrierungsverlust nach 2–3 Monaten, R33 bei höheren Temperaturen (DE)",
+          "type": "claim"
+        },
+        {
+          "date": "2026-04-19",
+          "event": "Automatische Erkennung – Design-Issue BN-00004 markiert, At-Risk-Produkte identifiziert",
+          "type": "detection"
+        }
+      ],
+      "affectedProducts": [
+        {
+          "id": "PRD-00039",
+          "name": "PRD-00039 (DE)"
+        },
+        {
+          "id": "PRD-00082",
+          "name": "PRD-00082 (DE)"
+        },
+        {
+          "id": "PRD-00083",
+          "name": "PRD-00083 (ES)"
+        },
+        {
+          "id": "PRD-00084",
+          "name": "PRD-00084 (PL)"
+        },
+        {
+          "id": "PRD-00162",
+          "name": "PRD-00162 (DE)"
+        }
+      ],
+      "suggestedActions": [
+        "R33 (PM-00015) durch Präzisionswiderstand mit besserem Temperaturkoeffizient (≤50 ppm/°C) ersetzen – Designrevision einleiten",
+        "Proaktive Kundenbenachrichtigung für alle ART-00001-Geräte im 8–12-Wochen-Altersfenster (Märkte DE, ES, PL)",
+        "Feldaustausch-Programm für betroffene Seriennummern vorbereiten",
+        "TechSupply-Batch SB-00017 für neue Verbauungen sperren bis Designfreigabe",
+        "Thermische Qualifikationstests für Nachfolge-Widerstand durchführen"
+      ]
+    },
+    {
+      "id": "INV-004",
+      "severity": "low",
+      "title": "Bediener user_042 – Kosmetische Defekte (LABEL_MISALIGN, VISUAL_SCRATCH) in PO-00012/18/24",
+      "source": "Fertigungsdefekte / Bedieneranalyse",
+      "summary": "Bediener user_042 erzeugte in den Aufträgen PO-00012, PO-00018 und PO-00024 insgesamt 15 kosmetische Defekte: 11× LABEL_MISALIGN, 4× VISUAL_SCRATCH. Höchste Aktivität in SEC-00001 (54 Installationen). Kein Sicherheits- oder Funktionsrisiko. Schulung/Nachweisung des Bedieners empfohlen.",
+      "defects": 15,
+      "claims": 0,
+      "risk": 0.1,
+      "status": "Offen – Coaching-Maßnahme",
+      "age": "Laufend",
+      "rootCause": "Bediener user_042 zeigt überdurchschnittliche kosmetische Fehlerrate (LABEL_MISALIGN, VISUAL_SCRATCH) in Sektion SEC-00001 (Montage Linie 1). Ursache: fehlerhafte Handhabungstechnik beim Etikettieren und Montieren.",
+      "timeline": [
+        {
+          "date": "2026-04-19",
+          "event": "PO-00012: 4× LABEL_MISALIGN, 1× VISUAL_SCRATCH durch user_042",
+          "type": "defect"
+        },
+        {
+          "date": "2026-04-19",
+          "event": "PO-00018: 4× LABEL_MISALIGN, 1× VISUAL_SCRATCH durch user_042",
+          "type": "defect"
+        },
+        {
+          "date": "2026-04-19",
+          "event": "PO-00024: 3× LABEL_MISALIGN, 2× VISUAL_SCRATCH durch user_042",
+          "type": "defect"
+        },
+        {
+          "date": "2026-04-19",
+          "event": "Automatische Erkennung – Operator-Flag SEC-00001 gesetzt",
+          "type": "detection"
+        }
+      ],
+      "affectedProducts": [
+        {
+          "id": "PO-00012",
+          "name": "Auftrag PO-00012"
+        },
+        {
+          "id": "PO-00018",
+          "name": "Auftrag PO-00018"
+        },
+        {
+          "id": "PO-00024",
+          "name": "Auftrag PO-00024"
+        }
+      ],
+      "suggestedActions": [
+        "Coaching-Gespräch mit user_042 – Etikettier- und Montagetechnik überprüfen",
+        "Nachschulung an Etikettierstation und Sichtprüfung durchführen",
+        "Fehlerrate user_042 für 4 Wochen engmaschig überwachen",
+        "Betroffene Einheiten aus PO-00012/18/24 auf Endkundentauglichkeit prüfen (kosmetische Abnahme)"
+      ]
+    }
+  ]
 }

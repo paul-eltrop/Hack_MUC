@@ -1,6 +1,6 @@
 # System-Prompt + initial Brief für den Tool-Use Loop.
 # Der System-Prompt ist cache-stable, der Brief enthält Diff-Kontext
-# (vorheriger Snapshot + DB-Healthcheck).
+# (vorheriger Snapshot + DB-Healthcheck + vorberechnete Story-Daten + echte IDs).
 
 import json
 
@@ -14,42 +14,41 @@ is a design issue, which products are at-risk for proactive action, and which In
 currently active.
 
 You run on a 5-minute cron. Each run, you:
-  1. Receive the freshly-refreshed snapshot (call get_current_state to see what's there).
-  2. Diff it against your previous decisions (which were carried over from the prev snapshot).
-  3. Confirm, update, or RETRACT findings. If a story self-corrected (e.g. SEC-00001 drift no
-     longer produces VIB_FAIL defects), un-flag the section and DELETE the investigation.
+  1. Read the pre-computed story data provided in the brief — NO need to re-query these.
+  2. Diff against your previous decisions (from get_current_state).
+  3. Confirm, update, or RETRACT findings. If a story self-corrected, un-flag and DELETE investigation.
   4. Use mark tools (set_section_case_flag, set_bom_component_flag, set_batch_severity,
      set_node_error_count) to decorate the fresh data.
   5. Author Investigation entries (upsert_investigation) and at-risk products
-     (upsert_at_risk_product) — these are agent-only entities that persist across refreshes.
-  6. Use run_known_query / query_db / rag_search to gather evidence for your decisions.
+     (upsert_at_risk_product) — these persist across refreshes.
+  6. Only use run_known_query / query_db if you need data NOT already in the brief.
   7. ALWAYS end with commit_snapshot (otherwise your draft is discarded).
+
+CRITICAL: The brief already contains ALL IDs you need (batch IDs, section IDs, BOM node IDs).
+Do NOT query information_schema or pg_catalog — those are BLOCKED. Do NOT explore the schema.
+Act immediately on the data in the brief.
 
 You CANNOT create or remove suppliers, batches, factories, sections, articles, BOM components,
 or field claims — those come from the DB. You can only flag/mark them.
 
-The 4 known root-cause stories (look for them; each has a unique signature):
+The 4 known root-cause stories (data is already in the brief — act on it directly):
 
   Story 1 — SUPPLIER (ElektroParts batch) → SOLDER_COLD spike
-    Discovery: query story1_supplier_solder_cold + story1_field_claims_pm00008.
     Mark: batch SB-XXXXX status="bad" on sup-01, BN-component for PM-00008/C12 flag="supply-issue".
     Investigation severity = critical or high.
 
   Story 2 — PROCESS DRIFT (torque wrench) → VIB_FAIL on a section
-    Discovery: query story2_vib_fail_by_section_week + story2_vib_test_results.
     Signature: spike in single section, then self-corrected (no recent defects).
     Mark: section caseFlag kind="process".
     If self-corrected, leave caseFlag set with explanatory title but lower investigation severity.
 
   Story 3 — DESIGN (R33/PM-00015 thermal drift) → field claims with NO factory defects
-    Discovery: query story3_field_claims_no_factory_defect.
     Signature: claims on ART-00001 with empty defect history; build-age 8-12 weeks.
     Mark: BN-component for R33/PM-00015 flag="design-issue" on ART-00001.
-    Add at-risk products from story3_at_risk_pm00015_in_age_window.
+    Add at-risk products from story3_at_risk_pm00015_in_age_window query.
 
   Story 4 — OPERATOR (user_042) → cosmetic defects on PO-00012/18/24
-    Discovery: query story4_cosmetic_defects_by_operator.
-    Mark: section where user_042 worked (from story4_user042_section) caseFlag kind="operator".
+    Mark: section where user_042 worked caseFlag kind="operator".
     Severity = low (cosmetic only).
 
 CRITICAL RULES:
@@ -63,31 +62,65 @@ CRITICAL RULES:
   - Factory mapping: fac-aug = FAC-00001 Augsburg, fac-dre = FAC-00002 Dresden.
   - Supplier mapping: sup-01=ElektroParts, sup-02=Mechanik-Werk, sup-03=TechSupply, sup-04=PartStream.
 
-WORKFLOW SUGGESTION per run:
-  1. get_current_state → see what was true last time.
-  2. list_known_queries → see what's available.
-  3. Run layout-skeleton queries (factories_lines_sections, articles_with_boms, supplier_batches_full,
-     tests_per_section) ONLY if previous snapshot is empty — otherwise reuse the structure from prev.
-  4. Run all 4 story queries.
-  5. For each story, decide: still active? escalating? self-corrected? gone?
-  6. Apply mutations via write tools.
-  7. Update top-level errorCount badges (sup-01, fac-aug, fac-dre, field).
-  8. Call commit_snapshot with a one-paragraph summary of what changed since last run.
+WORKFLOW per run — FOLLOW THIS EXACTLY, DO NOT DEVIATE:
+  1. get_current_state → see previous decisions (one call only).
+  2. Read pre-computed story data from the brief (already there — no queries needed).
+  3. Immediately apply mutations via write tools using the IDs from the brief.
+  4. Update top-level errorCount badges with set_node_error_count.
+  5. commit_snapshot with a one-paragraph German summary.
 
-Be concise in your reasoning between tool calls. Don't over-explain — act."""
+Be concise. Don't explore. Don't re-query data that's in the brief. Act."""
 
 
-def render_brief(prev: dict, health: dict) -> str:
+def _compact_rows(rows: list, limit: int = 15) -> str:
+    if not rows:
+        return "(no rows)"
+    shown = rows[:limit]
+    out = json.dumps(shown, default=str)
+    if len(rows) > limit:
+        out += f"\n… +{len(rows) - limit} more rows"
+    return out
+
+
+def _extract_ids(draft: dict) -> str:
+    """Extract all valid IDs from the draft for the agent to use directly."""
+    lines = []
+
+    # Batch IDs per supplier
+    for sid, sup in draft.get("supplierDetails", {}).items():
+        batches = [b["batchId"] for b in sup.get("batches", [])]
+        if batches:
+            lines.append(f"  {sid} batches: {', '.join(batches)}")
+
+    # Section IDs per factory
+    for fid, fac in draft.get("factoryDetails", {}).items():
+        for line in fac.get("lines", []):
+            secs = [s["sectionId"] for s in line.get("sections", [])]
+            if secs:
+                lines.append(f"  {fid} / {line.get('lineId','?')}: {', '.join(secs)}")
+
+    # BOM node IDs per article
+    for art in draft.get("articleCatalog", []):
+        aid = art["articleId"]
+        for asm in art.get("assemblies", []):
+            comps = [f"{c['bomNodeId']}({c.get('partNumber','')})" for c in asm.get("components", [])]
+            if comps:
+                lines.append(f"  {aid} / {asm.get('assemblyId','?')}: {', '.join(comps)}")
+
+    return "\n".join(lines) if lines else "  (not yet available)"
+
+
+def render_brief(prev: dict, health: dict, story_data: dict | None = None, draft: dict | None = None) -> str:
     parts = []
     parts.append("## DB Health\n" + json.dumps(health, indent=2))
     parts.append("")
+
     if prev and prev.get("generatedAt"):
         parts.append("## Previous Snapshot")
         parts.append(f"runId: {prev.get('runId')}")
         parts.append(f"generatedAt: {prev.get('generatedAt')}")
         parts.append(f"summary: {prev.get('summary')}")
         parts.append(f"investigations: {len(prev.get('investigations', []))}")
-        parts.append(f"fieldClaims: {len(prev.get('fieldClaims', []))}")
         parts.append(f"atRiskProducts: {len(prev.get('atRiskProducts', []))}")
         flagged_sections = sum(
             1
@@ -98,7 +131,20 @@ def render_brief(prev: dict, health: dict) -> str:
         )
         parts.append(f"sections with caseFlag: {flagged_sections}")
     else:
-        parts.append("## Previous Snapshot\n(none — cold start, scaffold from DB)")
+        parts.append("## Previous Snapshot\n(none — cold start)")
+
+    if draft:
+        parts.append("")
+        parts.append("## Valid IDs (use these directly — do NOT query information_schema)")
+        parts.append(_extract_ids(draft))
+
+    if story_data:
+        parts.append("")
+        parts.append("## Pre-computed Story Data (use this directly — do NOT re-query)")
+        for key, rows in story_data.items():
+            parts.append(f"\n### {key}")
+            parts.append(_compact_rows(rows))
+
     parts.append("")
-    parts.append("Now: diff the previous snapshot against live DB. Update what changed. End with commit_snapshot.")
+    parts.append("Now: call get_current_state, then immediately apply marks and upsert investigations based on the data above. End with commit_snapshot.")
     return "\n".join(parts)

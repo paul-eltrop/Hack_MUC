@@ -41,6 +41,19 @@ type PanelState =
   | null;
 
 const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "http://localhost:8000";
+const CLOSED_INV_STORAGE_KEY = "closedInvestigations";
+
+function markInvestigationClosed(investigationId: string) {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = localStorage.getItem(CLOSED_INV_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) as string[] : [];
+    const next = Array.from(new Set([...parsed, investigationId]));
+    localStorage.setItem(CLOSED_INV_STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    localStorage.setItem(CLOSED_INV_STORAGE_KEY, JSON.stringify([investigationId]));
+  }
+}
 
 export default function KanbanBoard() {
   const { id } = useParams<{ id: string }>();
@@ -51,6 +64,9 @@ export default function KanbanBoard() {
   const [nextId, setNextId] = useState(0);
   const [generating, setGenerating] = useState(true);
   const [ragUsed, setRagUsed] = useState(false);
+  const [closingBusy, setClosingBusy] = useState(false);
+  const [closingDone, setClosingDone] = useState(false);
+  const [closingError, setClosingError] = useState<string | null>(null);
   useEffect(() => {
     if (!inv) { setGenerating(false); return; }
 
@@ -93,6 +109,52 @@ export default function KanbanBoard() {
       localStorage.setItem(`kanban-${id}`, JSON.stringify(cards));
     }
   }, [cards]);
+
+  useEffect(() => {
+    if (!id || !inv || cards.length === 0 || closingBusy || closingDone) return;
+    try {
+      const raw = localStorage.getItem(CLOSED_INV_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) as string[] : [];
+      if (parsed.includes(id)) {
+        setClosingDone(true);
+        return;
+      }
+    } catch {
+      // ignore and continue
+    }
+    const allCompleted = cards.every((card) => card.status === "Completed");
+    if (!allCompleted) return;
+
+    const run = async () => {
+      setClosingBusy(true);
+      setClosingError(null);
+      try {
+        const res = await fetch("/api/investigation-close", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            investigation_id: id,
+            investigation: inv,
+            tasks: cards,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          const detail = typeof data?.detail === "string" ? data.detail : "";
+          setClosingError(data?.error || detail || "Abschluss konnte nicht ins RAG geschrieben werden");
+          return;
+        }
+        markInvestigationClosed(id);
+        setClosingDone(true);
+      } catch {
+        setClosingError("Portal nicht erreichbar — Abschluss konnte nicht gespeichert werden");
+      } finally {
+        setClosingBusy(false);
+      }
+    };
+
+    run();
+  }, [cards, id, inv, closingBusy, closingDone]);
 
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -295,6 +357,21 @@ export default function KanbanBoard() {
           </div>
           <div className="w-32" />
         </div>
+        {closingBusy && (
+          <div className="mb-3 rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700">
+            Alle Tasks completed: Fall wird zusammengefasst und ins RAG geschrieben…
+          </div>
+        )}
+        {closingDone && (
+          <div className="mb-3 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+            Abschluss gespeichert: Investigation wurde aus dem Critical-Filter entfernt und im RAG abgelegt.
+          </div>
+        )}
+        {closingError && (
+          <div className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+            {closingError}
+          </div>
+        )}
 
         {/* Board */}
         <div className="grid grid-cols-4 gap-4 pb-6 flex-1 overflow-hidden">

@@ -70,7 +70,9 @@ export function pickAtRisk(
 
 export function pickInvestigations(
   snap: AgentSnapshot | null,
-  _fallback?: Investigation[],
+  fallback?: Investigation[],
 ): Investigation[] {
-  return snap?.investigations ?? [];
+  const agentInvestigations = snap?.investigations ?? [];
+  if (agentInvestigations.length > 0) return agentInvestigations;
+  return fallback ?? [];
 }

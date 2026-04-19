@@ -448,6 +448,12 @@ class ChatRequest(BaseModel):
     history: list[dict] = []
 
 
+class InvestigationCloseRequest(BaseModel):
+    investigation_id: str
+    investigation: dict
+    tasks: list[dict]
+
+
 @app.post("/share/links")
 def create_link(req: CreateLinkRequest):
     link_id = str(uuid.uuid4())[:8]
@@ -911,6 +917,108 @@ async def investigation_retrieve(body: dict):
         {"text": r.payload["text"], "source": r.payload.get("file_name", "unknown"), "score": r.score}
         for r in results
     ]
+
+
+@app.post("/investigation/close")
+def investigation_close(req: InvestigationCloseRequest):
+    if not req.tasks:
+        raise HTTPException(status_code=400, detail="Keine Tasks übergeben")
+    if any(str(task.get("status", "")).lower() != "completed" for task in req.tasks):
+        raise HTTPException(status_code=400, detail="Nicht alle Tasks sind completed")
+
+    inv = req.investigation or {}
+    timeline = inv.get("timeline") or []
+    affected = inv.get("affectedProducts") or []
+
+    task_lines = []
+    for idx, task in enumerate(req.tasks, 1):
+        assignees = ", ".join(task.get("assignees") or [])
+        proof_desc = (task.get("proofDescription") or "").strip()
+        proof_file = (task.get("proofFileName") or "").strip()
+        link_id = (task.get("linkId") or "").strip()
+        parts = [f"{idx}. {task.get('text', '')}".strip()]
+        if assignees:
+            parts.append(f"Owner: {assignees}")
+        if proof_desc:
+            parts.append(f"Nachweis: {proof_desc}")
+        if proof_file:
+            parts.append(f"Datei: {proof_file}")
+        if link_id:
+            parts.append(f"Share-Link: {link_id}")
+        task_lines.append(" | ".join(parts))
+
+    timeline_lines = [
+        f"- {entry.get('date', '')}: {entry.get('event', '')}" for entry in timeline if entry.get("event")
+    ]
+    affected_lines = [
+        f"- {product.get('id', '')}: {product.get('name', '')}" for product in affected if product.get("name")
+    ]
+
+    raw_context = "\n".join(
+        [
+            f"Investigation-ID: {req.investigation_id}",
+            f"Titel: {inv.get('title', '')}",
+            f"Schweregrad: {inv.get('severity', '')}",
+            f"Quelle: {inv.get('source', '')}",
+            f"Summary: {inv.get('summary', '')}",
+            f"Root Cause: {inv.get('rootCause', '')}",
+            f"Defects: {inv.get('defects', 0)} | Claims: {inv.get('claims', 0)} | Risk: {inv.get('risk', 0)}",
+            "",
+            "Betroffene Produkte:",
+            *affected_lines,
+            "",
+            "Timeline:",
+            *timeline_lines,
+            "",
+            "Abgeschlossene Tasks inklusive Notizen aus Share-Links:",
+            *task_lines,
+        ]
+    ).strip()
+
+    summary_prompt = (
+        "Fasse den Fall für eine RAG-Wissensbasis auf Deutsch zusammen. "
+        "Nenne Problem, Evidenz/Notizen, umgesetzte Lösungsschritte und Ergebnis. "
+        "Schreibe kompakt und faktisch."
+    )
+
+    summary_text = raw_context
+    try:
+        summary_response = openai_client.chat.completions.create(
+            model="gpt-4o",
+            max_tokens=650,
+            messages=[
+                {"role": "system", "content": summary_prompt},
+                {"role": "user", "content": raw_context},
+            ],
+        )
+        content = summary_response.choices[0].message.content
+        if content and content.strip():
+            summary_text = content.strip()
+    except Exception:
+        pass
+
+    doc_id = f"inv-close-{req.investigation_id}-{uuid.uuid4().hex[:8]}"
+    index_document(
+        doc_id,
+        summary_text,
+        {
+            "source": "investigation-closure",
+            "investigation_id": req.investigation_id,
+            "company_id": INVESTIGATION_COMPANY_ID,
+            "file_name": f"{req.investigation_id}-closure-summary.md",
+        },
+    )
+    store_document_status(
+        doc_id=doc_id,
+        company_id=INVESTIGATION_COMPANY_ID,
+        link_id=req.investigation_id,
+        file_name=f"{req.investigation_id}-closure-summary.md",
+        file_sha256=sha256_hex(summary_text.encode("utf-8")),
+        source="investigation-closure",
+        status="accepted",
+    )
+
+    return {"ok": True, "doc_id": doc_id, "summary": summary_text}
 
 
 @app.get("/")

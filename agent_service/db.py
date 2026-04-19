@@ -209,7 +209,7 @@ NAMED_QUERIES: dict[str, dict] = {
                    fc.complaint_text, fc.market, fc.reported_part_number,
                    fc.claim_ts::date AS claim_date,
                    p.build_ts::date  AS build_date,
-                   EXTRACT(WEEK FROM (fc.claim_ts - p.build_ts))::int AS weeks_since_build
+                   (EXTRACT(DAY FROM (fc.claim_ts - p.build_ts)) / 7)::int AS weeks_since_build
             FROM field_claim fc
             JOIN product p ON fc.product_id = p.product_id
             ORDER BY fc.claim_ts DESC
@@ -249,6 +249,7 @@ def run_named(name: str, limit: int = 200) -> list[dict]:
 
 SELECT_ONLY = re.compile(r"^\s*(WITH\b|SELECT\b)", re.IGNORECASE)
 FORBIDDEN = re.compile(r"\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|GRANT|REVOKE|CREATE)\b", re.IGNORECASE)
+SCHEMA_QUERY = re.compile(r"information_schema|pg_catalog|pg_class|pg_attribute", re.IGNORECASE)
 
 
 def run_freeform(sql: str, limit: int = 200) -> list[dict]:
@@ -256,6 +257,8 @@ def run_freeform(sql: str, limit: int = 200) -> list[dict]:
         raise ValueError("query must start with SELECT or WITH")
     if FORBIDDEN.search(sql):
         raise ValueError("query contains forbidden keyword (writes are not allowed)")
+    if SCHEMA_QUERY.search(sql):
+        raise ValueError("information_schema queries are blocked — the schema is already known. Use run_known_query or the pre-computed story data from the brief.")
     with connect() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(sql)
