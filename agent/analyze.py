@@ -3,7 +3,7 @@
 
 import json
 import os
-import pprint
+import sys
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -515,7 +515,7 @@ def fetch_raw_data() -> dict[str, list[dict]]:
             for query_name, meta in STORY_QUERIES.items():
                 cur.execute(meta["sql"])
                 data[query_name] = [dict(r) for r in cur.fetchall()]
-                print(f"  ✓ {query_name} ({len(data[query_name])} Zeilen)", flush=True)
+                print(f"  ✓ {query_name} ({len(data[query_name])} Zeilen)", file=sys.stderr, flush=True)
     finally:
         conn.close()
 
@@ -567,21 +567,17 @@ def identify_problem(raw_data: dict[str, list[dict]], pattern: str) -> dict:
 
 
 def run() -> dict:
-    print("Datenbankabfragen laufen...", flush=True)
+    print("Datenbankabfragen laufen...", file=sys.stderr, flush=True)
     raw_data = fetch_raw_data()
     token_estimate = sum(len(str(rows)) for rows in raw_data.values()) // 4
-    print(f"\nDaten gesammelt — ca. {token_estimate:,} Tokens. GPT-4o analysiert...\n", flush=True)
-    print("=" * 70 + "\n", flush=True)
+    print(f"\nDaten gesammelt — ca. {token_estimate:,} Tokens. GPT-4o analysiert...\n", file=sys.stderr, flush=True)
 
     result = identify_problem(raw_data, pattern="manex_4_root_cause_stories")
-
-    pprint.pprint(result["root_cause_analysis"])
 
     return result
 
 
-# Aufruf: python agent/analyze.py
+# Aufruf: python agent/analyze.py | python agent/plan.py
 # Benötigt MANEX_DB_URL und OPENAI_API_KEY in .env (siehe .env.example).
-# Output: quality_report.json im selben Verzeichnis + JSON-Dump auf stdout.
 if __name__ == "__main__":
-    run()
+    print(json.dumps(run(), default=str))
