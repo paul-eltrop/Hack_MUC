@@ -65,7 +65,9 @@ const defaultEdgeOptions = {
 
 type ViewMode = "overview" | "sub-flow";
 
-function Inner() {
+type InnerProps = { embedded: boolean };
+
+function Inner({ embedded }: InnerProps) {
   const [nodes, setNodes, onNodesChange] =
     useNodesState<TopFlowNode>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
@@ -112,8 +114,9 @@ function Inner() {
 
       // Bg-Node: Aspect-Ratio matched zur Bildschirmfläche, damit er bei
       // voller Skalierung den Viewport sauber abdeckt (nicht zu schmal/hoch).
-      const bgAspect =
-        typeof window !== "undefined"
+      const bgAspect = embedded
+        ? 0.52
+        : typeof window !== "undefined"
           ? window.innerHeight / window.innerWidth
           : 9 / 16;
       const bgH = BG_W * bgAspect;
@@ -166,7 +169,7 @@ function Inner() {
         setViewMode("sub-flow");
       }, ZOOM_DURATION / 2);
     },
-    [focusedId, reactFlow, setNodes, setEdges],
+    [embedded, focusedId, reactFlow, setNodes, setEdges],
   );
 
   const onBack = useCallback(() => {
@@ -220,8 +223,12 @@ function Inner() {
     }, 1000);
   }, [reactFlow, setNodes, setEdges]);
 
+  const shellClass = embedded
+    ? "relative h-[min(560px,70vh)] w-full min-h-[420px] rounded-2xl overflow-hidden bg-zinc-50 border border-slate-200 shadow-inner"
+    : "fixed inset-0 bg-zinc-50";
+
   return (
-    <div className="fixed inset-0 bg-zinc-50">
+    <div className={shellClass}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -264,10 +271,12 @@ function Inner() {
   );
 }
 
-export default function FlowView() {
+type FlowViewProps = { embedded?: boolean };
+
+export default function FlowView({ embedded = false }: FlowViewProps) {
   return (
     <ReactFlowProvider>
-      <Inner />
+      <Inner embedded={embedded} />
     </ReactFlowProvider>
   );
 }
