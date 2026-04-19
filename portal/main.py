@@ -2,7 +2,7 @@
 # Speichert Share-Links in SQLite, nutzt Qdrant für Retrieval und Docling fürs Parsing.
 # Serviert statische HTML-Seiten und verarbeitet Uploads (PDF/DOCX/PPTX/...)
 
-import os, uuid, sqlite3, tempfile
+import os, re, uuid, sqlite3, tempfile, hashlib
 from pathlib import Path
 from contextlib import asynccontextmanager
 
@@ -20,7 +20,7 @@ load_dotenv(Path(__file__).parent.parent / ".env")
 
 DB_PATH = Path(__file__).parent / "links.db"
 QDRANT_PATH = str(Path(__file__).parent.parent / "rag" / "qdrant_storage")
-COLLECTION = "documents"
+ACTIVE_COLLECTION = "documents"
 EMBEDDING_DIM = 1536
 MAX_UPLOAD_SIZE_BYTES = 30 * 1024 * 1024
 ALLOWED_EXTENSIONS = {
@@ -43,14 +43,59 @@ def init_db():
             created_at TEXT DEFAULT (datetime('now'))
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS rag_claims (
+            id TEXT PRIMARY KEY,
+            company_id TEXT NOT NULL,
+            link_id TEXT NOT NULL,
+            doc_id TEXT NOT NULL,
+            source TEXT NOT NULL,
+            sentence TEXT NOT NULL,
+            claim_key TEXT NOT NULL,
+            claim_value TEXT NOT NULL,
+            polarity INTEGER NOT NULL,
+            numeric_value REAL,
+            created_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_rag_claims_company_key ON rag_claims(company_id, claim_key)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS rag_documents (
+            doc_id TEXT PRIMARY KEY,
+            company_id TEXT NOT NULL,
+            link_id TEXT NOT NULL,
+            file_name TEXT NOT NULL,
+            file_sha256 TEXT NOT NULL,
+            source TEXT NOT NULL,
+            status TEXT NOT NULL,
+            reason TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_rag_docs_company_hash ON rag_documents(company_id, file_sha256)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS rag_contradictions (
+            id TEXT PRIMARY KEY,
+            company_id TEXT NOT NULL,
+            link_id TEXT NOT NULL,
+            new_doc_id TEXT NOT NULL,
+            existing_doc_id TEXT NOT NULL,
+            claim_key TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            new_sentence TEXT,
+            existing_sentence TEXT,
+            created_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_rag_contra_company_newdoc ON rag_contradictions(company_id, new_doc_id)")
     conn.commit()
     conn.close()
 
 
-def _ensure_collection():
-    if not qdrant.collection_exists(COLLECTION):
+def _ensure_collection(name: str):
+    if not qdrant.collection_exists(name):
         qdrant.create_collection(
-            collection_name=COLLECTION,
+            collection_name=name,
             vectors_config=VectorParams(size=EMBEDDING_DIM, distance=Distance.COSINE),
         )
 
@@ -58,7 +103,7 @@ def _ensure_collection():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
-    _ensure_collection()
+    _ensure_collection(ACTIVE_COLLECTION)
     yield
 
 
@@ -79,7 +124,7 @@ def chunk_text(text: str, chunk_size: int = 512, overlap: int = 64) -> list[str]
     return chunks
 
 
-def index_document(doc_id: str, text: str, metadata: dict) -> None:
+def index_document(doc_id: str, text: str, metadata: dict, collection_name: str = ACTIVE_COLLECTION) -> None:
     chunks = chunk_text(text)
     if not chunks:
         raise ValueError("Dokument enthält keinen verwertbaren Text")
@@ -92,13 +137,13 @@ def index_document(doc_id: str, text: str, metadata: dict) -> None:
         )
         for i, (chunk, vector) in enumerate(zip(chunks, vectors))
     ]
-    qdrant.upsert(collection_name=COLLECTION, points=points)
+    qdrant.upsert(collection_name=collection_name, points=points)
 
 
 def retrieve(query: str, company_id: str, top_k: int = 5) -> list[dict]:
     query_vector = embed([query])[0]
     results = qdrant.query_points(
-        collection_name=COLLECTION,
+        collection_name=ACTIVE_COLLECTION,
         query=query_vector,
         limit=top_k,
         with_payload=True,
@@ -137,6 +182,241 @@ def parse_document_with_docling(file_path: Path) -> str:
     if isinstance(text, str):
         return text
     return ""
+
+
+def split_sentences(text: str) -> list[str]:
+    chunks = re.split(r"[.!?]\s+|\n+", text)
+    return [c.strip() for c in chunks if c and c.strip()]
+
+
+def normalize_key(raw: str) -> str:
+    text = raw.lower().strip()
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"[^a-z0-9äöüß _/-]", "", text)
+    text = re.sub(r"\b(der|die|das|the|a|an)\b", "", text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text[:80]
+
+
+def normalize_value(raw: str) -> str:
+    text = raw.lower().strip()
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"[,;]+$", "", text)
+    return text[:120]
+
+
+def parse_numeric(value: str) -> float | None:
+    match = re.search(r"-?\d+(?:[.,]\d+)?", value)
+    if not match:
+        return None
+    return float(match.group(0).replace(",", "."))
+
+
+def sha256_hex(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+def extract_claims(text: str) -> list[dict]:
+    patterns = [
+        (re.compile(r"^\s*([A-Za-z0-9ÄÖÜäöüß _/\-]{3,80})\s*[:=]\s*([^\n]{1,120})\s*$"), 1),
+        (re.compile(r"^\s*([A-Za-z0-9ÄÖÜäöüß _/\-]{3,80})\s+(?:is|are|ist|sind)\s+(?:not|nicht|kein|keine)\s+([^\n]{1,120})\s*$", re.IGNORECASE), -1),
+        (re.compile(r"^\s*([A-Za-z0-9ÄÖÜäöüß _/\-]{3,80})\s+(?:is|are|ist|sind)\s+([^\n]{1,120})\s*$", re.IGNORECASE), 1),
+    ]
+    claims: list[dict] = []
+    seen: set[tuple[str, str, int]] = set()
+    for sentence in split_sentences(text):
+        cleaned_sentence = sentence.strip().strip("-").strip()
+        if len(cleaned_sentence) < 6:
+            continue
+        for pattern, polarity in patterns:
+            match = pattern.match(cleaned_sentence)
+            if not match:
+                continue
+            key_raw, value_raw = match.group(1), match.group(2)
+            claim_key = normalize_key(key_raw)
+            claim_value = normalize_value(value_raw)
+            if not claim_key or not claim_value:
+                continue
+            signature = (claim_key, claim_value, polarity)
+            if signature in seen:
+                continue
+            seen.add(signature)
+            claims.append(
+                {
+                    "sentence": cleaned_sentence[:240],
+                    "claim_key": claim_key,
+                    "claim_value": claim_value,
+                    "polarity": polarity,
+                    "numeric_value": parse_numeric(claim_value),
+                }
+            )
+            break
+    return claims
+
+
+def detect_contradictions(company_id: str, doc_id: str, claims: list[dict], source: str) -> list[dict]:
+    if not claims:
+        return []
+
+    keys = sorted({claim["claim_key"] for claim in claims})
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    placeholders = ",".join(["?"] * len(keys))
+    rows = conn.execute(
+        f"""
+        SELECT id, doc_id, source, sentence, claim_key, claim_value, polarity, numeric_value
+        FROM rag_claims
+        WHERE company_id = ?
+          AND claim_key IN ({placeholders})
+          AND doc_id <> ?
+        """,
+        [company_id, *keys, doc_id],
+    ).fetchall()
+    conn.close()
+
+    existing_by_key: dict[str, list[sqlite3.Row]] = {}
+    for row in rows:
+        existing_by_key.setdefault(row["claim_key"], []).append(row)
+
+    contradictions: list[dict] = []
+    for claim in claims:
+        key = claim["claim_key"]
+        for existing in existing_by_key.get(key, []):
+            numeric_new = claim["numeric_value"]
+            numeric_old = existing["numeric_value"]
+            opposite_polarity = claim["polarity"] * int(existing["polarity"]) == -1
+            different_numeric = (
+                numeric_new is not None
+                and numeric_old is not None
+                and abs(float(numeric_new) - float(numeric_old)) > 1e-9
+            )
+            different_text = (
+                claim["claim_value"] != existing["claim_value"]
+                and numeric_new is None
+                and numeric_old is None
+            )
+            if opposite_polarity or different_numeric or different_text:
+                reason = "opposite_polarity" if opposite_polarity else "different_value"
+                contradictions.append(
+                    {
+                        "reason": reason,
+                        "claim_key": key,
+                        "new": {
+                            "doc_id": doc_id,
+                            "source": source,
+                            "sentence": claim["sentence"],
+                            "claim_value": claim["claim_value"],
+                            "polarity": claim["polarity"],
+                        },
+                        "existing": {
+                            "doc_id": existing["doc_id"],
+                            "source": existing["source"],
+                            "sentence": existing["sentence"],
+                            "claim_value": existing["claim_value"],
+                            "polarity": int(existing["polarity"]),
+                        },
+                    }
+                )
+    return contradictions
+
+
+def store_claims(company_id: str, link_id: str, doc_id: str, source: str, claims: list[dict]) -> None:
+    if not claims:
+        return
+    conn = sqlite3.connect(DB_PATH)
+    conn.executemany(
+        """
+        INSERT INTO rag_claims (
+            id, company_id, link_id, doc_id, source, sentence, claim_key, claim_value, polarity, numeric_value
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                str(uuid.uuid4()),
+                company_id,
+                link_id,
+                doc_id,
+                source,
+                claim["sentence"],
+                claim["claim_key"],
+                claim["claim_value"],
+                int(claim["polarity"]),
+                claim["numeric_value"],
+            )
+            for claim in claims
+        ],
+    )
+    conn.commit()
+    conn.close()
+
+
+def store_document_status(
+    doc_id: str,
+    company_id: str,
+    link_id: str,
+    file_name: str,
+    file_sha256: str,
+    source: str,
+    status: str,
+    reason: str = "",
+) -> None:
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO rag_documents (
+            doc_id, company_id, link_id, file_name, file_sha256, source, status, reason
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (doc_id, company_id, link_id, file_name, file_sha256, source, status, reason),
+    )
+    conn.commit()
+    conn.close()
+
+
+def find_document_by_hash(company_id: str, file_sha256: str) -> sqlite3.Row | None:
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    row = conn.execute(
+        """
+        SELECT doc_id, status, reason, link_id, created_at
+        FROM rag_documents
+        WHERE company_id = ? AND file_sha256 = ?
+        ORDER BY created_at DESC
+        LIMIT 1
+        """,
+        (company_id, file_sha256),
+    ).fetchone()
+    conn.close()
+    return row
+
+
+def store_contradictions(company_id: str, link_id: str, new_doc_id: str, contradictions: list[dict]) -> None:
+    if not contradictions:
+        return
+    conn = sqlite3.connect(DB_PATH)
+    conn.executemany(
+        """
+        INSERT INTO rag_contradictions (
+            id, company_id, link_id, new_doc_id, existing_doc_id, claim_key, reason, new_sentence, existing_sentence
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                str(uuid.uuid4()),
+                company_id,
+                link_id,
+                new_doc_id,
+                c["existing"]["doc_id"],
+                c["claim_key"],
+                c["reason"],
+                c["new"]["sentence"],
+                c["existing"]["sentence"],
+            )
+            for c in contradictions
+        ],
+    )
+    conn.commit()
+    conn.close()
 
 
 # Share-Link-Logik:
@@ -277,6 +557,30 @@ async def upload_document(
         raise HTTPException(status_code=400, detail="Datei ist leer")
     if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
         raise HTTPException(status_code=413, detail="Datei ist zu groß (max 30 MB)")
+    file_sha256 = sha256_hex(file_bytes)
+    source = "uploaded-document"
+
+    existing = find_document_by_hash(link["company_id"], file_sha256)
+    if existing and existing["status"] == "accepted":
+        return {
+            "ok": True,
+            "deduplicated": True,
+            "message": "Datei bereits verifiziert und indexiert",
+            "doc_id": existing["doc_id"],
+            "link_id": existing["link_id"],
+            "company_id": link["company_id"],
+            "file_name": filename,
+        }
+    if existing and existing["status"] in {"quarantined", "rejected"}:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "message": "Datei wurde zuvor wegen Datenkonflikt blockiert",
+                "previous_doc_id": existing["doc_id"],
+                "status": existing["status"],
+                "reason": existing["reason"],
+            },
+        )
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(file_bytes)
@@ -288,15 +592,62 @@ async def upload_document(
             raise HTTPException(status_code=400, detail="Kein Text im Dokument erkannt")
 
         doc_id = f"upload-{link_id}-{uuid.uuid4().hex[:10]}"
+        claims = extract_claims(parsed_text)
+        contradictions = detect_contradictions(
+            company_id=link["company_id"],
+            doc_id=doc_id,
+            claims=claims,
+            source=source,
+        )
+        if contradictions:
+            store_document_status(
+                doc_id=doc_id,
+                company_id=link["company_id"],
+                link_id=link_id,
+                file_name=filename,
+                file_sha256=file_sha256,
+                source=source,
+                status="quarantined",
+                reason="contradictory_claims",
+            )
+            store_contradictions(link["company_id"], link_id, doc_id, contradictions)
+            raise HTTPException(
+                status_code=409,
+                detail={
+                    "message": "Upload blockiert: Widerspruch zu bestehendem RAG-Wissen erkannt",
+                    "status": "quarantined",
+                    "doc_id": doc_id,
+                    "contradictions_found": len(contradictions),
+                    "contradictions": contradictions[:20],
+                },
+            )
+
         index_document(
             doc_id,
             parsed_text,
             {
-                "source": "uploaded-document",
+                "source": source,
                 "company_id": link["company_id"],
                 "link_id": link_id,
                 "file_name": filename,
+                "ingestion_status": "accepted",
             },
+        )
+        store_claims(
+            company_id=link["company_id"],
+            link_id=link_id,
+            doc_id=doc_id,
+            source=source,
+            claims=claims,
+        )
+        store_document_status(
+            doc_id=doc_id,
+            company_id=link["company_id"],
+            link_id=link_id,
+            file_name=filename,
+            file_sha256=file_sha256,
+            source=source,
+            status="accepted",
         )
     except HTTPException:
         raise
@@ -311,14 +662,18 @@ async def upload_document(
         "company_id": link["company_id"],
         "file_name": filename,
         "doc_id": doc_id,
+        "status": "accepted",
+        "claims_extracted": len(claims),
+        "contradictions_found": len(contradictions),
+        "contradictions": contradictions[:20],
     }
 
 
 @app.get("/debug/rag")
 def debug_rag():
-    if not qdrant.collection_exists(COLLECTION):
+    if not qdrant.collection_exists(ACTIVE_COLLECTION):
         return {"total": 0, "points": []}
-    points = qdrant.scroll(collection_name=COLLECTION, limit=200, with_payload=True)[0]
+    points = qdrant.scroll(collection_name=ACTIVE_COLLECTION, limit=200, with_payload=True)[0]
     return {
         "total": len(points),
         "points": [
@@ -326,6 +681,24 @@ def debug_rag():
             for p in points
         ],
     }
+
+
+@app.get("/share/uploads/{link_id}")
+def list_uploads(link_id: str):
+    link = get_link(link_id)
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        """
+        SELECT doc_id, file_name, status, reason, source, created_at
+        FROM rag_documents
+        WHERE company_id = ? AND link_id = ?
+        ORDER BY created_at DESC
+        """,
+        (link["company_id"], link_id),
+    ).fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
 
 
 app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
