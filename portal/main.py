@@ -1,11 +1,13 @@
-# FastAPI backend für das Shared Links + Chat Interface + Auto-RAG-Ingestion Portal.
-# Speichert Share-Links in SQLite, nutzt Qdrant für RAG, serviert statische HTML-Seiten.
+# FastAPI backend für Shared Links, Chat und Dokument-Upload mit RAG-Ingestion.
+# Speichert Share-Links in SQLite, nutzt Qdrant für Retrieval und Docling fürs Parsing.
+# Serviert statische HTML-Seiten und verarbeitet Uploads (PDF/DOCX/PPTX/...)
 
-import os, uuid, sqlite3
+import os, uuid, sqlite3, tempfile
 from pathlib import Path
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException
+from docling.document_converter import DocumentConverter
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -20,9 +22,14 @@ DB_PATH = Path(__file__).parent / "links.db"
 QDRANT_PATH = str(Path(__file__).parent.parent / "rag" / "qdrant_storage")
 COLLECTION = "documents"
 EMBEDDING_DIM = 1536
+MAX_UPLOAD_SIZE_BYTES = 30 * 1024 * 1024
+ALLOWED_EXTENSIONS = {
+    ".pdf", ".docx", ".pptx", ".xlsx", ".md", ".txt", ".html", ".htm", ".csv",
+}
 
 openai_client = OpenAI()
 qdrant = QdrantClient(path=QDRANT_PATH)
+doc_converter = DocumentConverter()
 
 
 def init_db():
@@ -74,6 +81,8 @@ def chunk_text(text: str, chunk_size: int = 512, overlap: int = 64) -> list[str]
 
 def index_document(doc_id: str, text: str, metadata: dict) -> None:
     chunks = chunk_text(text)
+    if not chunks:
+        raise ValueError("Dokument enthält keinen verwertbaren Text")
     vectors = embed(chunks)
     points = [
         PointStruct(
@@ -115,6 +124,19 @@ def extract_facts(user_message: str, assistant_reply: str) -> str:
         messages=[{"role": "user", "content": prompt}],
     )
     return response.choices[0].message.content
+
+
+def parse_document_with_docling(file_path: Path) -> str:
+    result = doc_converter.convert(str(file_path))
+    doc = getattr(result, "document", result)
+    if hasattr(doc, "export_to_markdown"):
+        return doc.export_to_markdown()
+    if hasattr(doc, "export_to_text"):
+        return doc.export_to_text()
+    text = getattr(result, "text", "")
+    if isinstance(text, str):
+        return text
+    return ""
 
 
 # Share-Link-Logik:
@@ -233,6 +255,63 @@ def chat(req: ChatRequest):
         )
 
     return {"reply": reply, "facts_ingested": True, "complete": is_complete, "chunks_used": len(chunks)}
+
+
+@app.post("/share/upload")
+async def upload_document(
+    link_id: str = Form(...),
+    file: UploadFile = File(...),
+):
+    link = get_link(link_id)
+
+    filename = file.filename or "document"
+    suffix = Path(filename).suffix.lower()
+    if suffix not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Dateityp nicht unterstützt: {suffix or 'ohne Endung'}",
+        )
+
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Datei ist leer")
+    if len(file_bytes) > MAX_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Datei ist zu groß (max 30 MB)")
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(file_bytes)
+        temp_path = Path(tmp.name)
+
+    try:
+        parsed_text = parse_document_with_docling(temp_path).strip()
+        if not parsed_text:
+            raise HTTPException(status_code=400, detail="Kein Text im Dokument erkannt")
+
+        doc_id = f"upload-{link_id}-{uuid.uuid4().hex[:10]}"
+        index_document(
+            doc_id,
+            parsed_text,
+            {
+                "source": "uploaded-document",
+                "company_id": link["company_id"],
+                "link_id": link_id,
+                "file_name": filename,
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Dokument konnte nicht verarbeitet werden: {exc}") from exc
+    finally:
+        temp_path.unlink(missing_ok=True)
+
+    return {
+        "ok": True,
+        "link_id": link_id,
+        "company_id": link["company_id"],
+        "file_name": filename,
+        "doc_id": doc_id,
+    }
 
 
 @app.get("/debug/rag")
