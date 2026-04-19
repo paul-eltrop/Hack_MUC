@@ -1,126 +1,370 @@
-# CLAUDE.md
+# Hack MUC 2026 · Manex Quality Copilot
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Hackathon-Projekt für **thinc! Hack MUC 2026**, Challenge von **Manex.AI**. Ziel: Interaktiver LLM-Copilot, der den klassischen 8D/FMEA-Excel-Report ablöst — auf Basis eines semantischen Fabrikdaten-Layers.
 
-## Context
+## Repository-Struktur
 
-This is the **Thinc Hackathon 2026** team solution repository. The challenge is to build an **Interactive Quality Co-Pilot** for the fictional manufacturer "Manex" — replacing static Excel-based 8D/FMEA reports with an LLM-powered, interactive quality reporting system.
-
-The reference infrastructure (schema, seed data, Docker setup) lives in `../Manex_given/Thinc-Hackathon-2026-Manex/`. This repo is where the team's actual solution is built.
-
-## Infrastructure Commands
-
-**Start the provided Manex stack** (from `../Manex_given/Thinc-Hackathon-2026-Manex/`):
-```bash
-docker compose --env-file .env.<team-slug> -p manex-<team-slug> up -d
+```
+Hack_MUC/
+├── manex-base/           # read-only Starter von Manex — NICHT anfassen
+│   ├── docs/             # Case, Schema, Data-Patterns, API-Ref, Quickstart
+│   ├── supabase/         # Migrations + 7000-Zeilen Seed
+│   ├── data-generation/  # Templates für Claim-/Defect-/Rework-Texte
+│   ├── assets/           # 12 echte Defect-Fotos
+│   └── scripts/          # Deploy-Skripte pro Team
+├── frontend/             # unsere Next.js App — alles spielt hier
+└── CLAUDE.md             # diese Datei
 ```
 
-**Regenerate seed data** (requires Python):
-```bash
-cd data-generation && pip install -r requirements.txt && python generate.py
-# Writes output to ../supabase/seed.sql (~9,500 rows, deterministic RNG seed 20260413)
+## Challenge in 3 Pillars
+
+Manex erkennt Pattern in ihren Daten automatisch. Wir bauen den **Bearbeitungs-Layer** — was passiert nach der Erkennung:
+
+1. **Intelligent Generation** — LLM entwirft Report-Inhalte aus DB-Daten
+2. **Innovative Visualization** — statt Tabellen: Flow, Fault-Trees, BOM-Traces
+3. **Closed-Loop Workflow** — Maßnahmen als `product_action` in DB schreiben + tracken
+
+Flow: `Pattern von Manex → unser On-Demand-Agent matcht offene Fälle → Inbox → Klick → Detail-Canvas → User bearbeitet → Write-Back`.
+
+## Domain / DB-Modell (aus `manex-base/`)
+
+19 Tabellen in einem Postgres-Schema mit strengen ID-Prefixes. Gruppiert nach Domäne:
+
+**Ort** (Where): `factory` (FAC-) → `line` (LIN-) → `section` (SEC-)
+**Design** (Recipe): `article` (ART-) → `configuration` (CFG-) → `bom` (BOM-) → `bom_node` (BN-) + `part_master` (PM-)
+**Supply** (Material): `supplier_batch` (SB-) → `part` (P-)
+**Production**: `production_order` (PO-), `product` (PRD-), `product_part_install` (PPI-)
+**Test**: `test` (TST-), `test_result` (TR-)
+**Quality Events**: `defect` (DEF-), `field_claim` (FC-), `rework` (RW-)
+**Workflow** (das einzige schreibbare): `product_action` (PA-)
+
+**Schreibrechte:** nur `product_action` + `rework` + `CREATE TABLE public.*` (für eigene Pattern/Case-Tabellen).
+
+**Auth:** `apikey`-Header (nicht Bearer), JWT signiert mit Team-Secret, Rolle `team_writer`.
+
+**4 seeded Root-Cause-Stories in den Daten:**
+1. **Supply** — Batch SB-00008/9 von ElektroParts (PM-00008 Kondensatoren) → ~25 Defekte + ~12 Claims
+2. **Production (Drift)** — Section SEC-00001 (Montage Werk Augsburg), Dez 2025 → ~20 Defekte (Code `VIB_FAIL`)
+3. **Design** — Article ART-00001, Position R33 (PM-00015) → ~15 Field-Claims, 0 in-factory
+4. **Production (Operator)** — user_042 über POs PO-00012/18/24 → ~15 low-severity Defekte
+
+Vollständige Schema-Referenz: `manex-base/docs/SCHEMA.md`, `manex-base/docs/DATA_PATTERNS.md`.
+
+## Unser Frontend — aktueller Stand
+
+Next.js 15 App Router, TypeScript, Tailwind v4, `@xyflow/react` (React Flow v12).
+
+**Einzige Route bislang:** `/` (Landing) — die **Flow-Overview**.
+
+### Visuelles Konzept
+
+Top-Level-Canvas zeigt die Supply-Chain-Topologie als 7 Nodes:
+- 4 **Supplier** (ElektroParts, Mechanik-Werk, TechSupply, PartStream)
+- 2 **Werke** (Augsburg Assembly, Dresden Test+Packaging)
+- 1 **Kunden** (Field, aggregiert aus 7 Märkten)
+
+Kanten: 4 Supplier → Werk Augsburg (dünn grau), Augsburg → Dresden (animiert), Dresden → Field (animiert).
+
+Jeder Node: Kind-Label oben, Titel, Twemoji-Illustration (SVGs von jsdelivr), Fehler-Badge oben rechts (rot wenn >0, grau wenn 0), Subtitle + Event-Count darunter.
+
+### Interaktion
+
+**Keine User-Zoom/Pan-Gesten.** Alles klick-getriggert:
+
+- **Click auf einen Node** → Node wechselt Typ zu `flowDetail` (wird zu 900×600 großem Frame), alle anderen Nodes + Edges faden auf Opacity 0, Kamera fitView'd auf den Detail-Node (~1.2× Zoom). Fühlt sich wie "in den Node reinzoomen auf freien Canvas" an — der Detail-Frame ist ein echter React-Flow-Node, kein Overlay.
+- **Detail-Frame:** dünner akzentuierter Border (`border` rounded-3xl), Kind-Tint als Hintergrund, subtiler Shadow. Oben links im Frame: runder `←`-Button + Kind-Chip + Titel.
+- **Click auf `←`** → setFocusedId(null) → Detail schrumpft, andere Nodes/Edges erscheinen wieder, Kamera zoomt auf Overview zurück.
+
+### Die vier konzeptuellen Fehler-Domänen
+
+Jeder Case hat seine Root in **einer** von vier Domänen (konsolidiert aus den 19 Tabellen):
+
+1. **Supply** — Supplier + Batch + Part → Material kam fehlerhaft rein
+2. **Design** — Article + Config + BOM + BOM-Node → Rezept ist fehlerhaft
+3. **Production** — Section + Install + Operator → Ausführung in der Fabrik fehlerhaft
+4. **Detection** — Test + Test_Result → Prüfung selbst fehlerhaft (seltener)
+
+**Response-Ebene** (keine Ursache, nur Dokumentation + Reaktion): `defect`, `field_claim`, `rework`, `product_action`.
+
+Die Linien sind uninteressant als eigene Entität — sie sind nur Gruppierungs-Container für Sections und werden als Metadata behandelt. Auf dem Canvas erscheinen Linien nicht als Knoten.
+
+### Datei-Layout im Frontend
+
+```
+src/app/
+├── page.tsx                    # rendert <FlowView />
+├── layout.tsx, globals.css
+└── _flow/                      # private (nicht geroutet)
+    ├── FlowView.tsx            # React-Flow Container + State für focusedId
+    ├── flow-context.tsx        # FlowUiContext für {focusedId, setFocusedId}
+    ├── flow-nodes.tsx          # FlowNode (compact) + DetailNode (900×600)
+    └── flow-data.ts            # 7 Nodes + 6 Edges + Mock-Batches für ElektroParts
 ```
 
-**Provision a new team** (organizer only):
+Der Detail-Node ist aktuell **leer** — `DetailNode` rendert nur Header. Batches/Details für Supplier / Sections für Factory / Markt-Breakdown für Field sind der nächste logische Schritt.
+
+## Design-Entscheidungen (Stand)
+
+- **Visueller Canvas > Excel-Report** — das ist die ganze Idee
+- **Kein Auto-Layout** (kein dagre/elkjs) — Positions werden per Regelwerk definiert, vom Agent später
+- **Dünner Code-Footprint** — pure React Flow, Zustand-Lib nicht eingebaut (yet)
+- **Manex-Topologie ist "agent-generated"** im Pitch — für die Demo hardcoded, später über einen Crawler aus `supplier_batch` + `product_part_install` + `test_result` ableitbar
+- **Die drei Top-Level-Views** (geplant): Flow (Default, aktuell gebaut), Inbox (Case-Liste), Factory-Tree — Inbox + Tree sind noch nicht implementiert
+- **Agent-Ready-UI** (für V3) — Pure Operations + Shared Dispatch + Stabile IDs würden reinkommen, wenn der Agent-Mode dran ist; jetzt noch nicht nötig
+
+## How to Run
+
 ```bash
-./scripts/deploy-team.sh <team-slug> <team-number>
+cd frontend
+npm install           # falls nicht schon gelaufen
+npm run dev           # startet auf :3000 (bzw. nächstem freien Port)
 ```
 
-## Data Access
+Dev-Server läuft im Hintergrund und hot-reloaded Änderungen.
 
-Three access tiers are provided (credentials in your `handouts/team-<slug>.txt`):
+**Typecheck:**
+```bash
+cd frontend && npx tsc --noEmit
+```
 
-| Tier | Use when |
-|------|----------|
-| **PostgREST REST API** (port 8000+N) | Client-side fetching, supabase-js |
-| **Supabase Studio** (port 8400+N) | Exploratory SQL, schema browsing |
-| **Direct PostgreSQL** (port 5430+N) | pandas/Polars, SQLAlchemy, psql |
+## Next Steps
 
-REST calls require `Authorization: Bearer <JWT>` and `apikey: <JWT>` headers.
+In ungefähr dieser Reihenfolge:
 
-Image URLs: construct by prepending the nginx host `http://<host>:9000` to the relative path in `defect.image_url`.
+1. **Detail-Node mit Content füllen** — für Supplier (ElektroParts): die 7 Batches als Sub-Cards im Detail-Frame rendern, mit Bad/Suspect/Ok-Status
+2. **Supabase/PostgREST-Anbindung** — die hardcoded Node-Counts durch Live-Queries ersetzen (API-Ref: `manex-base/docs/API_REFERENCE.md`). `.env.local` mit Team-Secret + Base-URL
+3. **Case-Modell aufbauen** — `failure_pattern`, `case_assignment`, `report_draft` als eigene Tabellen via `CREATE TABLE public.*`
+4. **Inbox-View (Route `/inbox`)** — Liste aktiver Cases, filter- und sortierbar, mit Domänen-Chips
+5. **Per-Case-Detail-Canvas** — der eigentliche 8D-Canvas pro Fall mit Produkt, Problem, Station, Material, Action (als Nodes) und Edges
+6. **LLM-Integration** — Claude Sonnet 4.6 mit Tool-Use für Node-Annotations und Action-Vorschläge
+7. **Write-Back** — `product_action` INSERT aus Action-Stickern auf dem Canvas
+8. **Polish:** Drag-Drop-Sticker, Timeline-Scrubber, Similar-Cases-Overlay
 
-## Database Schema
+## React Flow v12 Reference (`@xyflow/react`)
 
-19 tables in the `public` schema. Key relationships:
+Diese Sektion ist die **Ground Truth** für alle React-Flow-Arbeit in diesem Projekt. Package heißt `@xyflow/react` (nicht mehr `reactflow`). Wir sind auf `12.10.2`.
 
-- **`product`** — central entity; every quality event references it
-- **`defect`** + **`test_result`** — in-factory detection chain
-- **`field_claim`** — post-shipment customer reports
-- **`rework`** — corrective actions on defects (**writable**)
-- **`product_action`** — 8D initiatives, ownership tracking (**writable**)
-- **`bom`** / **`bom_node`** / **`part_master`** / **`part`** — bill of materials + physical part instances
-- **`product_part_install`** — links installed parts to BOM positions (traceability)
-- **`supplier_batch`** — supplier delivery batches
+### Setup-Regeln
 
-Convenience views pre-join common relationships: `v_defect_detail`, `v_product_bom_parts`, `v_field_claim_detail`, `v_quality_summary`.
+- **Immer** `import "@xyflow/react/dist/style.css";` — ohne die CSS rendern Edges gar nicht.
+- **Container braucht Größe** — `<div>` um `<ReactFlow>` muss explizite `height`/`width` haben (in unserer App: `fixed inset-0`). Sonst: leerer Canvas.
+- **`<ReactFlowProvider>` wrappen**, wenn `useReactFlow()`/`useNodesState()` außerhalb von `<ReactFlow>` genutzt werden (unser `FlowView`-Pattern).
+- **`nodeTypes`/`edgeTypes` NIE inline im JSX definieren** — entweder Modul-Level `const` oder `useMemo`. Sonst Warning + Performance-Hit durch Remount aller Nodes bei jedem Render.
 
-**Write targets**: Only `product_action` and `rework` accept `INSERT/UPDATE`. All other seed tables block `DELETE`. Teams may `CREATE TABLE` freely in the `public` schema.
+### Node-Typ (Pflichtfelder + was wir nutzen)
 
-## The Four Root-Cause Stories
+```ts
+type Node<DataT = {}, TypeKey extends string = string> = {
+  id: string;              // pflicht, unique
+  position: { x, y };      // pflicht, Flow-Koordinaten
+  data: DataT;             // pflicht (kann {} sein)
+  type?: TypeKey;          // Key aus nodeTypes-Map; ohne → "default"
+  style?: CSSProperties;   // inline CSS — HIER width/height setzen, NICHT auf Node.width
+  className?: string;
+  hidden?, draggable?, selectable?, connectable?, deletable?, focusable?;
+  zIndex?: number;         // Stacking
+  parentId?: string;       // für Sub-Flows (war früher parentNode)
+  extent?: "parent" | [[x1,y1],[x2,y2]];
+  origin?: [0..1, 0..1];   // Anchor (0,0)=top-left, (0.5,0.5)=center
+  measured?: { width, height };  // READ-ONLY, von RF gesetzt
+  sourcePosition?, targetPosition?: Position;  // nur für default-Nodes
+};
+```
 
-The synthetic dataset contains four embedded patterns (documented fully in `../Manex_given/Thinc-Hackathon-2026-Manex/docs/DATA_PATTERNS.md`):
+**Wichtig:** `width`/`height` auf dem Node-Objekt **nicht direkt setzen** — via `style.width`/`style.height` oder CSS. RF berechnet `measured` selbst.
 
-1. **Supplier incident** — Bad capacitor batch (SB-00007, PM-00008) from ElektroParts GmbH → `SOLDER_COLD` defects + field claims, weeks 5–6/2026
-2. **Process drift** — Torque wrench calibration at Montage Linie 1 → `VIB_FAIL` defects, weeks 49–52/2025 (self-corrected Jan 2026)
-3. **Design weakness** — Resistor PM-00015 at BOM position R33 → thermal drift field claims, zero in-factory detection
-4. **Operator handling** — Packaging operator user_042 → cosmetic defects on orders PO-00012, PO-00018, PO-00024
+### Edge-Typ
 
-## Reference Documentation
+```ts
+type Edge<DataT = {}, TypeKey extends string = string> = {
+  id: string;              // pflicht
+  source: string;          // pflicht, Node-ID
+  target: string;          // pflicht, Node-ID
+  sourceHandle?: string;   // bei mehreren Handles pro Node zwingend
+  targetHandle?: string;
+  type?: "default" | "straight" | "step" | "smoothstep" | "simplebezier" | custom;
+  animated?, hidden?, selectable?, deletable?, focusable?;
+  style?: CSSProperties;   // { stroke, strokeWidth }
+  label?: ReactNode;       // + labelStyle, labelShowBg, labelBgStyle etc.
+  markerStart?, markerEnd?: EdgeMarkerType;
+  zIndex?, interactionWidth?;
+  data?: DataT;
+};
+```
 
-All reference docs are in `../Manex_given/Thinc-Hackathon-2026-Manex/docs/`:
+### Custom Nodes — die Regeln
 
-- `QUICKSTART.md` — connection setup, credential format, curl/Python/JS examples
-- `SCHEMA.md` — full ER diagram, ID prefix conventions (FAC-, ART-, BOM-, PM-, SB-, PRD-, DEF-, FC-, …)
-- `API_REFERENCE.md` — PostgREST conventions, view definitions, write-back examples
-- `DATA_PATTERNS.md` — root-cause stories, noise patterns, global distributions
-- `CASE.md` — evaluation rubric (UI/UX, GenAI use, actionability, business impact)
+```tsx
+// 1. Node-Typ mit Data + Type-Key definieren
+type BatchData = { batchNumber: string; status: "ok"|"bad" };
+type BatchNode = Node<BatchData, "batch">;
 
-## Challenge Architecture
+// 2. Komponente erhält NodeProps<BatchNode>
+function BatchCard({ data, selected }: NodeProps<BatchNode>) {
+  return (
+    <div style={{ width: 220, height: 120 }}>
+      <Handle type="target" position={Position.Left} />
+      {data.batchNumber}
+      <Handle type="source" position={Position.Right} />
+    </div>
+  );
+}
 
-Solutions should address three pillars:
-1. **Intelligent Generation** — LLM drafts problem descriptions and root-cause hypotheses from DB data
-2. **Innovative Visualization** — Interactive fault trees, Pareto charts, timelines, BOM traceability (not static tables)
-3. **Closed-Loop Workflow** — Convert findings into `product_action` records with owner assignment and progress tracking
+// 3. nodeTypes Modul-Level
+export const nodeTypes = { batch: BatchCard };
+```
 
-# Coding Guidelines
+**NodeProps (wird automatisch injected):** `id`, `data`, `type`, `selected`, `dragging`, `isConnectable`, `positionAbsoluteX/Y`, `width`, `height`, `sourcePosition`, `targetPosition`, `dragHandle`, `zIndex`, `parentId`, `deletable`, `draggable`, `selectable`. **Keine Position-Props für relative x/y** — nutze `positionAbsoluteX/Y`, wenn nötig.
 
-## Kommentare
+**Handle-Rezepte:**
+- Immer `type` (`"source"|"target"`) + `position` (`Position.Left|Right|Top|Bottom`) setzen.
+- Bei >1 Handle pro Seite: `id` setzen — sonst können Edges nicht eindeutig zuordnen.
+- Interne Elemente, die Klicks/Drags brauchen: CSS-Klasse `nodrag` (sonst schluckt RF den Event). `nopan`/`nowheel` analog, wenn ein Scrollbereich im Node existiert.
 
-- **Keine Inline-Kommentare.** Kein `// increment counter` neben `i++`.
-- Jede Datei beginnt mit genau **einem Kommentarblock (3 Zeilen)**, der beschreibt was die Datei tut. Nicht mehr, nicht weniger.
-- Kommentare im Code nur wenn die Logik **wirklich nicht offensichtlich** ist – z.B. ein Workaround, ein bekannter Bug, oder eine Business-Regel die man aus dem Code allein nicht ablesen kann.
-- Wenn du das Gefühl hast einen Kommentar schreiben zu müssen, benenne stattdessen die Variable oder Funktion besser.
+### Hooks — wann was
 
-## Error Handling
+| Hook | Nutzen | Re-Render-Verhalten |
+|------|--------|---------------------|
+| `useReactFlow()` | Imperative API (fitView, setNodes, getNode…) | re-rendert nicht bei Node-Changes |
+| `useNodesState(initial)` / `useEdgesState(initial)` | Controlled state + `onChange`-Handler | re-rendert bei jeder Change |
+| `useNodes()` / `useEdges()` | Reines Lesen | re-rendert bei **jeder** Änderung (auch Selection/Dragging) — **teuer!** |
+| `useStore(selector, eq?)` | Selektives State-Abo (Zustand-Store) | re-rendert nur bei Selector-Diff — **bevorzugt für fokussierte Reads** |
+| `useStoreApi()` | Imperativer Store-Access (`.getState()`) | nie |
+| `useViewport()` | `{x,y,zoom}` | bei jedem Viewport-Tick |
+| `useNodesInitialized()` | `true` wenn alle Nodes gemessen | einmalig |
+| `useOnSelectionChange({ onChange })` | Selection-Callback | nie selbst |
+| `useUpdateNodeInternals()` | Trigger-Funktion nach Handle-Mutation | — |
+| `useNodeConnections({ nodeId })` | Edges an einem Node | bei Edge-Changes |
+| `useHandleConnections({ type, nodeId, id })` | Edges an einem Handle | bei Edge-Changes |
+| `useNodesData(ids)` | `data` mehrerer Nodes | bei Data-Change |
 
-- **Kein defensives Try-Catch um Code der nicht failen kann.** Wenn eine Variable aus einer Zuweisung kommt und kein I/O, Netzwerk oder Parsing involviert ist, braucht sie kein Try-Catch.
-- Try-Catch nur dort wo tatsächlich Laufzeitfehler auftreten können: Dateizugriff, Netzwerk-Requests, JSON-Parsing von externem Input, Datenbankzugriffe.
-- Keine leeren Catch-Blöcke. Wenn du einen Fehler fängst, tu etwas Sinnvolles damit.
+### `useReactFlow()` — imperative Methoden (am häufigsten gebraucht)
 
-## Code-Stil
+```ts
+const rf = useReactFlow();
 
-- Schreibe Code so wie ein erfahrener Entwickler ihn bei einem Code-Review sehen will: kurz, klar, ohne Boilerplate.
-- Bevorzuge frühe Returns statt tief verschachtelter If-Else-Blöcke.
-- Keine Variablen deklarieren die nur einmal benutzt werden um sie direkt weiterzugeben – inline wenn es lesbar bleibt.
-- Keine unnötigen Abstraktionen. Nicht alles braucht eine eigene Klasse, ein Interface oder ein Pattern. Einfacher Code > cleverer Code.
-- Funktionen kurz halten. Wenn eine Funktion mehr als ~30 Zeilen hat, aufteilen.
+// State
+rf.getNodes(); rf.getEdges(); rf.getNode(id); rf.getEdge(id);
+rf.setNodes(arr | (prev) => next);
+rf.addNodes(node | node[]); rf.addEdges(edge | edge[]);
+rf.updateNode(id, patch | (n) => n);
+rf.updateNodeData(id, patch | (d) => d);
+rf.updateEdge(id, patch); rf.updateEdgeData(id, patch);
+rf.deleteElements({ nodes, edges }); // Promise<{deletedNodes,deletedEdges}>
 
-## Naming
+// Viewport — alle options: { duration, interpolate?: "smooth"|"linear" }
+rf.fitView({ nodes: [{id}], padding, duration, maxZoom, minZoom });
+rf.zoomIn(opts); rf.zoomOut(opts); rf.zoomTo(level, opts);
+rf.setViewport({x,y,zoom}, opts); rf.getViewport();
+rf.setCenter(x, y, { zoom, duration });
+rf.fitBounds({x,y,width,height}, opts);
 
-- Variablen- und Funktionsnamen sollen den Zweck beschreiben, nicht den Typ. `users` statt `userArray`, `isValid` statt `validationBooleanFlag`.
-- Keine Abkürzungen außer allgemein bekannte (`id`, `url`, `config`, `err`, `ctx`).
-- Konsistent bleiben: wenn im Projekt `fetch` verwendet wird, nicht plötzlich `get` oder `retrieve` einführen.
+// Koordinaten
+rf.screenToFlowPosition({x,y});  // Pixel → Flow
+rf.flowToScreenPosition({x,y});  // Flow → Pixel
+rf.getNodesBounds(nodes);
 
-## Struktur
+// Serialisierung
+rf.toObject(); // { nodes, edges, viewport }
 
-- Importe oben, gruppiert nach extern/intern, mit einer Leerzeile dazwischen.
-- Keine toten Importe, keine auskommentierten Code-Blöcke.
-- Dateien sollen eine Aufgabe haben. Wenn eine Datei zwei unabhängige Dinge tut, aufteilen.
+// Connections
+rf.getNodeConnections({ type?, nodeId, handleId? });
+rf.getHandleConnections({ type, nodeId, id });
 
-## Was du NICHT tun sollst
+// Intersection
+rf.getIntersectingNodes(nodeOrRect, partially?);
+rf.isNodeIntersecting(nodeOrRect, area, partially?);
+```
 
-- Keinen Code generieren der nur existiert um "sicher" auszusehen (leere Catch-Blöcke, redundante Null-Checks auf non-nullable Werte, überflüssige Type-Assertions).
-- Keine `console.log`-Statements als Debugging-Überbleibsel hinterlassen.
-- Keine TODO-Kommentare hinterlassen die nie bearbeitet werden.
-- Keinen Code wiederholen – wenn du Copy-Paste machst, extrahiere eine Funktion.
+### `<ReactFlow>`-Props, die wir tatsächlich brauchen
+
+- **Daten:** `nodes`, `edges`, `nodeTypes`, `edgeTypes` (alle memoized/stable).
+- **Viewport:** `fitView` (bool, initial-fit), `fitViewOptions` (`{ padding, nodes?, minZoom?, maxZoom?, duration? }`), `defaultViewport`, `minZoom`/`maxZoom`.
+- **Interaktions-Lock (unser Read-Only-Canvas):** `panOnDrag={false}`, `panOnScroll={false}`, `zoomOnScroll={false}`, `zoomOnPinch={false}`, `zoomOnDoubleClick={false}`, `nodesDraggable={false}`, `nodesConnectable={false}`, `elementsSelectable={false}`.
+- **Events:** `onNodeClick: NodeMouseHandler`, `onPaneClick`, `onNodesChange`, `onEdgesChange`, `onConnect`, `onInit`.
+- **Misc:** `proOptions={{ hideAttribution: true }}` (wir haben MIT-Version, aber entfernt Branding), `preventScrolling` (default `true`, blockt Page-Scroll über Canvas), `onlyRenderVisibleElements` (Performance bei großen Graphs), `colorMode: "light"|"dark"|"system"`.
+
+### `<Background>`-Props
+
+```tsx
+<Background
+  variant={BackgroundVariant.Dots}  // | Lines | Cross
+  gap={18}                           // number oder [x, y]
+  size={1}                           // Dot-Radius / Cross-Größe
+  color="#d4d4d8"
+  bgColor="..."  offset={0}  lineWidth={1}
+/>
+```
+
+### TypeScript-Muster, die wir durchziehen
+
+```ts
+// 1. Node-Typen als Union, wenn mehrere Custom-Types
+type SupplierNode = Node<SupplierData, "flow">;
+type DetailNode   = Node<SupplierData, "flowDetail">;
+type AppNode      = SupplierNode | DetailNode;
+
+// 2. State-Hooks typisieren
+const [nodes, setNodes, onNodesChange] = useNodesState<AppNode>(initialNodes);
+const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+
+// 3. useReactFlow generisch
+const rf = useReactFlow<AppNode, Edge>();
+
+// 4. NodeProps mit Union funktioniert nicht direkt — pro Komponente einzeln typen:
+function SupplierNodeView({ data }: NodeProps<SupplierNode>) { … }
+```
+
+### Die Fehler, die wir garantiert machen werden (und ihre Fixes)
+
+| Symptom | Ursache | Fix |
+|---|---|---|
+| Leerer Canvas | Container ohne `height` | Parent-Div explizite Höhe geben |
+| Edges unsichtbar | `dist/style.css` nicht importiert | Import in Root oder Component |
+| Warning "nodeTypes created on every render" | Inline-Objekt im JSX | Modul-Level `const` oder `useMemo` |
+| Edges mit falschem Handle | Mehrere Handles ohne `id` | Jedem Handle `id` geben + `sourceHandle`/`targetHandle` auf Edge |
+| Custom-Node hat keine Edges | Kein `<Handle>` im Custom-Component | Handle hinzufügen |
+| Drag auf internen Controls geht nicht | RF fängt Drag ab | `className="nodrag"` auf Element |
+| Scroll in Node-Content zoomt Canvas | Wheel durchgereicht | `className="nowheel"` auf Scrollbereich |
+| `fitView` klappt nicht beim ersten Render | Nodes noch nicht gemessen | `useNodesInitialized()` abwarten oder `setTimeout`/`requestAnimationFrame` |
+| "Parent node not found" | `extent: "parent"` ohne `parentId` | `parentId` setzen oder `extent` weg |
+| `useReactFlow` throw't | `ReactFlowProvider` fehlt | Provider außen rum |
+| Nodes bewegen sich nicht bei `setNodes` | Controlled-Mode erwartet frische Array-Referenz | Immer neuen Array zurückgeben, nicht mutieren |
+
+### v12-Gotchas (andere Training-Data-Versionen)
+
+- Package heißt **`@xyflow/react`**, nicht `reactflow`. CSS-Import: `@xyflow/react/dist/style.css`.
+- `parentNode` → **`parentId`**.
+- `project()` → **`screenToFlowPosition()`**.
+- `NodeProps` nutzt **`positionAbsoluteX/Y`**, nicht `xPos/yPos`.
+- `width`/`height` auf dem Node sind **read-only-computed** — für initiale Größe `style.width`/`style.height` oder CSS.
+- `fitView`-Options: `nodes: [{ id }]` filtert auf Teilmenge — praktisch für Focus-Animationen.
+- Handle-Default-Type ist `"source"`, Default-Position `Position.Top` — **beide immer explizit setzen**, lesbarer + weniger Überraschungen.
+
+### Referenz-Links (falls mal tiefer gegraben werden muss)
+
+- https://reactflow.dev/api-reference/react-flow — alle Props
+- https://reactflow.dev/api-reference/types/node — Node-Type
+- https://reactflow.dev/api-reference/types/edge — Edge-Type
+- https://reactflow.dev/api-reference/hooks — alle Hooks
+- https://reactflow.dev/learn/customization/custom-nodes — Custom Nodes Guide
+- https://reactflow.dev/learn/advanced-use/typescript — TS-Patterns
+- https://reactflow.dev/learn/troubleshooting/common-errors — Fehlerliste
+
+## Wichtige Constraints
+
+- **`manex-base/` ist read-only** — nur daraus lesen, nie ändern
+- Migrations haben Team-Isolation — wir können `CREATE TABLE` in unserem `public`-Schema, andere Teams sehen das nicht
+- Schreibrechte über die API nur auf `product_action` + `rework` — alle anderen Seed-Tabellen read-only
+- Der dev-server läuft als Background-Task; hot-reload funktioniert, aber nach strukturellen Änderungen lieber einmal `curl -sI http://localhost:3000/` checken
+- Twemoji-SVGs werden live von `cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg/<code>.svg` geladen — offline-Demo würde die brauchen
+
+## Referenz-Dokumente
+
+- [manex-base/docs/CASE.md](manex-base/docs/CASE.md) — Challenge + Bewertungskriterien
+- [manex-base/docs/SCHEMA.md](manex-base/docs/SCHEMA.md) — ER-Diagramm, 19 Tabellen
+- [manex-base/docs/DATA_PATTERNS.md](manex-base/docs/DATA_PATTERNS.md) — die 4 Root-Cause-Stories
+- [manex-base/docs/API_REFERENCE.md](manex-base/docs/API_REFERENCE.md) — PostgREST + Auth
+- [manex-base/docs/QUICKSTART.md](manex-base/docs/QUICKSTART.md) — Team-Setup
+- [manex-base/supabase/migrations/00001_create_schema.sql](manex-base/supabase/migrations/00001_create_schema.sql) — Ground-Truth Schema
+- [manex-base/supabase/migrations/00002_create_views.sql](manex-base/supabase/migrations/00002_create_views.sql) — 4 Convenience-Views

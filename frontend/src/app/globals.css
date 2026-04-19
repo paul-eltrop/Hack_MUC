@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@theme {
+  --font-headline: var(--font-plus-jakarta-sans), sans-serif;
+  --font-body: var(--font-inter), sans-serif;
+  --font-label: var(--font-inter), sans-serif;
+
+  --color-primary: #1E5A8A;
+  --color-secondary: #3c6188;
+  --color-tertiary: #573900;
+  --color-outline: #727780;
+  --color-outline-variant: #c1c7d0;
+  --color-on-surface: #0b1c30;
+  --color-on-surface-variant: #41474f;
+  --color-on-background: #0b1c30;
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #ffffff;
+  --color-surface: #F4F8FB;
+  --color-surface-dim: #cbdbf5;
+  --color-surface-bright: #F4F8FB;
+  --color-surface-variant: #d3e4fe;
+  --color-surface-tint: #296292;
+  --color-surface-container: #e5eeff;
+  --color-surface-container-low: #eff4ff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-high: #dce9ff;
+  --color-surface-container-highest: #d3e4fe;
+  --color-inverse-surface: #213145;
+  --color-inverse-on-surface: #eaf1ff;
+  --color-inverse-primary: #9acbff;
+  --color-primary-fixed: #cfe5ff;
+  --color-primary-fixed-dim: #9acbff;
+  --color-primary-container: #1E5A8A;
+  --color-on-primary-fixed: #001d34;
+  --color-on-primary-fixed-variant: #004a79;
+  --color-on-primary-container: #a6d0ff;
+  --color-secondary-fixed: #d1e4ff;
+  --color-secondary-fixed-dim: #a5c9f6;
+  --color-secondary-container: #aed2ff;
+  --color-on-secondary-container: #355a81;
+  --color-on-secondary-fixed: #001d36;
+  --color-on-secondary-fixed-variant: #22496f;
+  --color-tertiary-fixed: #ffddaf;
+  --color-tertiary-fixed-dim: #E8A838;
+  --color-tertiary-container: #754f00;
+  --color-on-tertiary: #ffffff;
+  --color-on-tertiary-container: #ffc15e;
+  --color-on-tertiary-fixed: #281800;
+  --color-on-tertiary-fixed-variant: #614000;
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  --radius: 0.125rem;
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes node-disappear {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+}
+
+@keyframes node-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-node-disappear {
+  animation: node-disappear 250ms cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+.animate-node-pop-in {
+  animation: node-pop-in 250ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes edge-disappear {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.animate-edge-disappear {
+  animation: edge-disappear 250ms ease-out forwards;
+}
+
+@keyframes edge-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-edge-appear {
+  animation: edge-appear 250ms ease-out both;
+}

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TaskPrecise | Task Execution</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#727780",
+                        "on-secondary-container": "#355a81",
+                        "on-secondary-fixed": "#001d36",
+                        "on-tertiary-container": "#ffc15e",
+                        "on-tertiary-fixed": "#281800",
+                        "secondary-fixed-dim": "#a5c9f6",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#e5eeff",
+                        "tertiary-fixed": "#ffddaf",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface-tint": "#296292",
+                        "background": "#F4F8FB",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#cfe5ff",
+                        "primary-container": "#1E5A8A",
+                        "surface-variant": "#d3e4fe",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "surface": "#F4F8FB",
+                        "on-primary": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "secondary-fixed": "#d1e4ff",
+                        "on-primary-fixed": "#001d34",
+                        "surface-bright": "#F4F8FB",
+                        "surface-container-high": "#dce9ff",
+                        "on-primary-container": "#a6d0ff",
+                        "tertiary-fixed-dim": "#E8A838",
+                        "inverse-primary": "#9acbff",
+                        "secondary-container": "#aed2ff",
+                        "on-surface-variant": "#41474f",
+                        "on-background": "#0b1c30",
+                        "tertiary-container": "#754f00",
+                        "primary": "#1E5A8A",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#573900",
+                        "secondary": "#3c6188",
+                        "outline-variant": "#c1c7d0",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#22496f",
+                        "on-primary-fixed-variant": "#004a79",
+                        "inverse-surface": "#213145",
+                        "primary-fixed-dim": "#9acbff",
+                        "on-tertiary-fixed-variant": "#614000"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F8FB;
+        }
+        h1, h2, h3 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-24 px-6">
+<div class="max-w-[1024px] mx-auto">
+<!-- Header Section -->
+<div class="mb-12">
+<span class="text-sm font-extrabold tracking-[0.2em] uppercase text-[#E8A838] block mb-3">CURRENT OPERATION</span>
+<h1 class="text-5xl font-bold tracking-tight text-on-background mb-4">
+                    Ultrasonic Scan of Joint Section 4B
+                </h1>
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-[#E8A838]"></span>
+<p class="text-xl text-secondary font-medium tracking-tight">Weld Crack Line 3 · Plant Munich</p>
+</div>
+</div>
+<!-- Content Sections -->
+<div class="space-y-16">
+<!-- Section 1: PROCEDURE STEPS -->
+<section>
+<div class="mb-8">
+<span class="text-sm font-extrabold tracking-[0.2em] uppercase text-[#E8A838]">PROCEDURE STEPS</span>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-8 space-y-6">
+<div class="flex items-start gap-6 group">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-primary font-bold">1</span>
+<p class="text-lg text-on-surface leading-relaxed">Clean the weld joint surface with industrial-grade solvent to remove all oxide layers and grease.</p>
+</div>
+<div class="flex items-start gap-6 group">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-primary font-bold">2</span>
+<p class="text-lg text-on-surface leading-relaxed">Apply ultrasonic couplant gel evenly across the transition zone of Section 4B.</p>
+</div>
+<div class="flex items-start gap-6 group">
+<span class="flex-shrink-0 w-8 h-8 rounded-full bg-surface-container-low flex items-center justify-center text-primary font-bold">3</span>
+<p class="text-lg text-on-surface leading-relaxed">Calibrate the transducer to 5MHz and scan at a 45-degree angle following the longitudinal weld line.</p>
+</div>
+</div>
+</section>
+<!-- Section 2: DESCRIPTION -->
+<section>
+<div class="mb-8">
+<span class="text-sm font-extrabold tracking-[0.2em] uppercase text-[#E8A838]">DESCRIPTION</span>
+</div>
+<div class="space-y-8">
+<textarea class="w-full h-64 bg-surface-container-low border-none rounded-xl p-8 text-lg text-on-surface focus:ring-2 focus:ring-primary/20 placeholder:text-outline/50 resize-none transition-all" placeholder="Document scan results, deviations, or specific observations here..."></textarea>
+<!-- Voice Recording Button -->
+<div class="flex justify-center">
+<button class="flex items-center gap-3 px-8 py-4 bg-surface-container-highest text-primary rounded-full hover:bg-surface-container-high transition-all border border-outline-variant/30 font-semibold group shadow-sm">
+<span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform">mic</span>
+<span class="text-lg">Voice Input</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section 3: DOCUMENTATION -->
+<section>
+<div class="mb-8">
+<span class="text-sm font-extrabold tracking-[0.2em] uppercase text-[#E8A838]">DOCUMENTATION</span>
+</div>
+<div class="grid grid-cols-1 gap-8">
+<div class="bg-surface-container-low rounded-xl p-12 border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-surface-container-high transition-all group">
+<span class="material-symbols-outlined text-4xl text-secondary group-hover:scale-110 transition-transform">add_a_photo</span>
+<span class="text-lg font-semibold text-secondary">Upload evidence photo</span>
+</div>
+</div>
+</section>
+<!-- Primary Action -->
+<section class="pt-10">
+<button class="w-full py-10 bg-[#1E5A8A] text-on-primary rounded-xl text-2xl font-black tracking-widest hover:opacity-90 transition-all duration-200 active:scale-[0.99] shadow-lg">
+                        COMPLETE TASK
+                    </button>
+</section>
+</div>
+</div>
+</main>
+</body></html>
