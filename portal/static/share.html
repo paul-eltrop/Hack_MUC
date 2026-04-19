@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Manex · Action</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #fff;
+    color: #0a0a0a;
+    min-height: 100vh;
+  }
+
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-inner {
+    display: flex; align-items: center; gap: 8px;
+    background: #f3f4f6; border-radius: 14px; padding: 4px;
+  }
+  .nav-brand {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+    background: #0a0a0a; color: #fff;
+    padding: 6px 14px; border-radius: 10px;
+  }
+  .nav-label {
+    font-size: 12px; font-weight: 600; color: #9ca3af;
+    padding: 6px 10px; letter-spacing: 0.04em;
+  }
+
+  main { max-width: 640px; margin: 0 auto; padding: 40px 24px 60px; }
+
+  .meta { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
+  h1 { font-size: 26px; font-weight: 700; line-height: 1.3; color: #0a0a0a; margin-bottom: 6px; }
+  .topic { font-size: 13px; color: #9ca3af; margin-bottom: 32px; }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; color: #9ca3af;
+    text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
+  }
+
+  .steps {
+    background: #fff; border: 1px solid #f0f0f0;
+    border-radius: 16px; overflow: hidden; margin-bottom: 28px;
+  }
+  .step {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f9fafb;
+  }
+  .step:last-child { border-bottom: none; }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #0a0a0a; color: #fff;
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .step-text { font-size: 14px; color: #374151; line-height: 1.5; }
+
+  .description-box {
+    width: 100%; min-height: 110px;
+    border: 1.5px solid #e5e7eb; border-radius: 14px;
+    padding: 14px 16px; font-size: 14px; color: #0a0a0a;
+    font-family: inherit; resize: vertical; outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 28px;
+  }
+  .description-box:focus { border-color: #0a0a0a; }
+  .description-box::placeholder { color: #d1d5db; }
+
+  .upload-zone {
+    border: 2px dashed #e5e7eb; border-radius: 16px;
+    padding: 32px 24px; text-align: center;
+    cursor: pointer; transition: all 0.15s;
+    margin-bottom: 28px; position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag { border-color: #0a0a0a; background: #f9fafb; }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-icon { margin-bottom: 8px; color: #9ca3af; }
+  .upload-text { font-size: 13px; font-weight: 600; color: #6b7280; }
+  .upload-sub { font-size: 11px; color: #d1d5db; margin-top: 3px; }
+  .upload-preview {
+    display: flex; align-items: center; gap-10px;
+    background: #f9fafb; border-radius: 10px;
+    padding: 10px 14px; gap: 10px;
+  }
+  .upload-preview-name { font-size: 13px; font-weight: 600; color: #374151; }
+  .upload-preview-size { font-size: 11px; color: #9ca3af; }
+
+  .complete-btn {
+    width: 100%; background: #0a0a0a; color: #fff;
+    border: none; border-radius: 16px; padding: 16px;
+    font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+    cursor: pointer; transition: background 0.15s;
+    text-transform: uppercase;
+  }
+  .complete-btn:hover { background: #1f2937; }
+  .complete-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .success {
+    display: none; text-align: center; padding: 48px 24px;
+  }
+  .success-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: #0a0a0a; margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .success-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .success-sub { font-size: 14px; color: #9ca3af; }
+
+  .error-msg { color: #ef4444; font-size: 13px; margin-top: 8px; display: none; }
+
+  .skeleton { background: #f3f4f6; border-radius: 6px; animation: pulse 1.4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <span class="nav-brand">MANEX</span>
+    <span class="nav-label">Quality Action</span>
+  </div>
+</nav>
+
+<main id="main">
+  <p class="meta" id="meta">Loading…</p>
+  <h1 id="title"><span class="skeleton" style="display:block;height:28px;width:75%;margin-bottom:8px;"></span></h1>
+  <p class="topic" id="topic"><span class="skeleton" style="display:inline-block;height:14px;width:45%;"></span></p>
+
+  <div id="content" style="display:none">
+    <p class="section-label">Task</p>
+    <div class="steps" id="steps"></div>
+
+    <p class="section-label">Notes &amp; Observations</p>
+    <textarea class="description-box" id="description" placeholder="Document results, deviations, or specific observations here…"></textarea>
+
+    <p class="section-label">Proof of Completion</p>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md,.csv,.xlsx,.jpg,.jpeg,.png" />
+      <div class="upload-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+        </svg>
+      </div>
+      <p class="upload-text">Upload evidence file</p>
+      <p class="upload-sub">PDF, DOCX, image — max 30 MB</p>
+    </div>
+
+    <p class="error-msg" id="errorMsg"></p>
+    <button class="complete-btn" id="completeBtn">Complete Task</button>
+  </div>
+
+  <div class="success" id="successView">
+    <div class="success-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <path d="M5 13l4 4L19 7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <h2 class="success-title">Task completed</h2>
+    <p class="success-sub">Your proof has been submitted. The action will be moved to <strong>In Review</strong>.</p>
+    <button onclick="resubmit()" style="margin-top:20px;background:none;border:1px solid #e5e7eb;border-radius:10px;padding:10px 20px;font-size:13px;color:#6b7280;cursor:pointer;">Update proof</button>
+  </div>
+</main>
+
+<script>
+const linkId = location.pathname.split("/share/")[1]?.replace(/\//g, "");
+let selectedFile = null;
+
+async function init() {
+  if (!linkId) { showError("Ungültiger Link"); return; }
+
+  try {
+    const res = await fetch(`/share/links/${linkId}`);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+
+    const actionText = data.welcome_message.replace(/^Action:\s*/i, "").trim();
+    document.getElementById("meta").textContent = "Current Action";
+    document.getElementById("title").textContent = actionText;
+    document.getElementById("topic").textContent = data.topic ?? "";
+
+    const stepsEl = document.getElementById("steps");
+    stepsEl.innerHTML = `
+      <div class="step">
+        <div class="step-num">1</div>
+        <p class="step-text">${escapeHtml(actionText)}</p>
+      </div>`;
+
+    document.getElementById("content").style.display = "block";
+  } catch {
+    document.getElementById("title").textContent = "Link nicht gefunden";
+    document.getElementById("meta").textContent = "Fehler";
+  }
+}
+
+document.getElementById("fileInput").addEventListener("change", (e) => {
+  selectedFile = e.target.files?.[0] ?? null;
+  updateUploadUI();
+});
+
+const zone = document.getElementById("uploadZone");
+zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("drag"); });
+zone.addEventListener("dragleave", () => zone.classList.remove("drag"));
+zone.addEventListener("drop", (e) => {
+  e.preventDefault();
+  zone.classList.remove("drag");
+  selectedFile = e.dataTransfer.files?.[0] ?? null;
+  updateUploadUI();
+});
+
+function updateUploadUI() {
+  const zone = document.getElementById("uploadZone");
+  if (selectedFile) {
+    zone.innerHTML = `
+      <div class="upload-preview">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <div>
+          <p class="upload-preview-name">${escapeHtml(selectedFile.name)}</p>
+          <p class="upload-preview-size">${(selectedFile.size / 1024).toFixed(0)} KB</p>
+        </div>
+      </div>`;
+  }
+}
+
+document.getElementById("completeBtn").addEventListener("click", async () => {
+  const btn = document.getElementById("completeBtn");
+  const description = document.getElementById("description").value.trim();
+  const errEl = document.getElementById("errorMsg");
+  errEl.style.display = "none";
+
+  btn.disabled = true;
+  btn.textContent = "Submitting…";
+
+  const form = new FormData();
+  form.append("description", description);
+  if (selectedFile) form.append("file", selectedFile, selectedFile.name);
+
+  try {
+    const res = await fetch(`/share/links/${linkId}/complete`, { method: "POST", body: form });
+    if (!res.ok) throw new Error("Submit failed");
+    document.getElementById("content").style.display = "none";
+    document.getElementById("successView").style.display = "block";
+    document.getElementById("title").textContent = "Task completed";
+    document.getElementById("topic").textContent = "";
+    document.getElementById("meta").textContent = "Done";
+  } catch {
+    errEl.textContent = "Fehler beim Einreichen. Bitte nochmal versuchen.";
+    errEl.style.display = "block";
+    btn.disabled = false;
+    btn.textContent = "Complete Task";
+  }
+});
+
+function escapeHtml(s) {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function resubmit() {
+  selectedFile = null;
+  document.getElementById("description").value = "";
+  document.getElementById("successView").style.display = "none";
+  document.getElementById("content").style.display = "block";
+  document.getElementById("completeBtn").disabled = false;
+  document.getElementById("completeBtn").textContent = "Complete Task";
+  document.getElementById("uploadZone").innerHTML = `
+    <input type="file" id="fileInput" accept=".pdf,.docx,.txt,.md,.csv,.xlsx,.jpg,.jpeg,.png" />
+    <div class="upload-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+      </svg>
+    </div>
+    <p class="upload-text">Upload evidence file</p>
+    <p class="upload-sub">PDF, DOCX, image — max 30 MB</p>`;
+  document.getElementById("fileInput").addEventListener("change", (e) => {
+    selectedFile = e.target.files?.[0] ?? null;
+    updateUploadUI();
+  });
+}
+
+function showError(msg) {
+  document.getElementById("title").textContent = msg;
+  document.getElementById("meta").textContent = "Fehler";
+}
+
+init();
+</script>
+</body>
+</html>

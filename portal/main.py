@@ -88,6 +88,14 @@ def init_db():
         )
     """)
     conn.execute("CREATE INDEX IF NOT EXISTS idx_rag_contra_company_newdoc ON rag_contradictions(company_id, new_doc_id)")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS link_completions (
+            link_id TEXT PRIMARY KEY,
+            description TEXT,
+            file_name TEXT,
+            completed_at TEXT DEFAULT (datetime('now'))
+        )
+    """)
     conn.commit()
     conn.close()
 
@@ -476,6 +484,70 @@ def get_link(link_id: str):
     if not row:
         raise HTTPException(status_code=404, detail="Link not found")
     return {"id": row[0], "company_id": row[1], "welcome_message": row[2], "topic": row[3]}
+
+
+@app.get("/share/links/{link_id}/status")
+def get_link_status(link_id: str):
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute(
+        "SELECT description, file_name, completed_at FROM link_completions WHERE link_id = ?", (link_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return {"completed": False}
+    return {"completed": True, "description": row[0], "file_name": row[1], "completed_at": row[2]}
+
+
+PROOFS_DIR = Path(__file__).parent / "proofs"
+
+@app.post("/share/links/{link_id}/complete")
+async def complete_link(link_id: str, description: str = Form(""), file: UploadFile = File(None)):
+    get_link(link_id)
+    file_name = None
+    if file and file.filename:
+        file_bytes = await file.read()
+        file_name = file.filename
+        suffix = Path(file_name).suffix.lower()
+        PROOFS_DIR.mkdir(exist_ok=True)
+        proof_path = PROOFS_DIR / f"{link_id}{suffix}"
+        proof_path.write_bytes(file_bytes)
+        if suffix in ALLOWED_EXTENSIONS:
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+                tmp.write(file_bytes)
+                temp_path = Path(tmp.name)
+            try:
+                parsed_text = parse_document_with_docling(temp_path).strip()
+                if parsed_text:
+                    doc_id = f"proof-{link_id}-{uuid.uuid5(uuid.NAMESPACE_DNS, file_name).hex[:10]}"
+                    index_document(doc_id, parsed_text, {"source": file_name, "link_id": link_id, "type": "proof"})
+            except Exception:
+                pass
+            finally:
+                temp_path.unlink(missing_ok=True)
+
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute(
+        "INSERT OR REPLACE INTO link_completions (link_id, description, file_name) VALUES (?, ?, ?)",
+        (link_id, description, file_name),
+    )
+    conn.commit()
+    conn.close()
+    return {"ok": True, "link_id": link_id}
+
+
+@app.get("/share/links/{link_id}/proof-file")
+def download_proof(link_id: str):
+    from fastapi.responses import FileResponse as FR
+    conn = sqlite3.connect(DB_PATH)
+    row = conn.execute("SELECT file_name FROM link_completions WHERE link_id = ?", (link_id,)).fetchone()
+    conn.close()
+    if not row or not row[0]:
+        raise HTTPException(status_code=404, detail="No file")
+    suffix = Path(row[0]).suffix.lower()
+    proof_path = PROOFS_DIR / f"{link_id}{suffix}"
+    if not proof_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    return FR(str(proof_path), filename=row[0])
 
 
 @app.post("/share/chat")
