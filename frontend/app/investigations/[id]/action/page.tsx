@@ -6,7 +6,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { investigations } from "../../../data";
+import { useInvestigations } from "../../../useInvestigations";
 
 type Column = "New" | "In Progress" | "In Review" | "Completed";
 const COLUMNS: Column[] = ["New", "In Progress", "In Review", "Completed"];
@@ -44,6 +44,7 @@ const PORTAL_URL = process.env.NEXT_PUBLIC_PORTAL_URL ?? "http://localhost:8000"
 
 export default function KanbanBoard() {
   const { id } = useParams<{ id: string }>();
+  const investigations = useInvestigations();
   const inv = investigations.find((i) => i.id === id);
 
   const [cards, setCards] = useState<Card[]>([]);

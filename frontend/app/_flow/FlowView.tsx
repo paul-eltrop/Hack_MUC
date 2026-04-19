@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Background,
   BackgroundVariant,
@@ -29,6 +29,8 @@ import { SupplierDetail } from "./SupplierDetail";
 import { ArticleCatalog } from "./ArticleCatalog";
 import { FactoryDetail } from "./FactoryDetail";
 import { FieldDetail } from "./FieldDetail";
+import { useAgentState } from "./agent-state";
+import { applyNodeOverrides } from "./applyAgentState";
 
 const OVERVIEW_PADDING = 0.15;
 const SUB_FLOW_PADDING = 0.2;
@@ -71,8 +73,9 @@ const defaultEdgeOptions = {
 type ViewMode = "overview" | "sub-flow";
 
 function Inner() {
+  const snap = useAgentState();
   const [nodes, setNodes, onNodesChange] =
-    useNodesState<TopFlowNode>(initialNodes);
+    useNodesState<TopFlowNode>(applyNodeOverrides(initialNodes, null));
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [focusedId, setFocusedId] = useState<string | null>(null);
@@ -80,6 +83,11 @@ function Inner() {
   const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
   const [contentClosing, setContentClosing] = useState(false);
   const reactFlow = useReactFlow();
+
+  useEffect(() => {
+    if (viewMode !== "overview") return;
+    setNodes(applyNodeOverrides(initialNodes, snap));
+  }, [snap, viewMode, setNodes]);
 
   const CONTENT_EXIT_MS = 250;
 

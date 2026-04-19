@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { investigations } from "./data";
+import { useInvestigations } from "./useInvestigations";
 
 // FlowView nutzt @xyflow/react — client-only via dynamic import.
 const FlowView = dynamic(() => import("./_flow/FlowView"), { ssr: false });
@@ -15,7 +15,7 @@ const FILTERS: Filter[] = ["Critical", "Not Assigned", "Assigned", "All"];
 const NOT_ASSIGNED_STATUSES = new Set(["Action Required", "Awaiting Owner"]);
 const ASSIGNED_STATUSES = new Set(["In Progress", "Monitoring"]);
 
-function applyFilter(filter: Filter) {
+function applyFilter(filter: Filter, investigations: ReturnType<typeof useInvestigations>) {
   if (filter === "Critical") return investigations.filter((i) => i.severity === "critical");
   if (filter === "Not Assigned") return investigations.filter((i) => NOT_ASSIGNED_STATUSES.has(i.status));
   if (filter === "Assigned") return investigations.filter((i) => ASSIGNED_STATUSES.has(i.status));
@@ -35,12 +35,12 @@ const statusPill: Record<string, string> = {
   "Monitoring": "bg-gray-100 text-gray-500",
 };
 
-const totalRisk = investigations.reduce((s, i) => s + i.risk, 0);
-const criticalCount = investigations.filter((i) => i.severity === "critical").length;
-
 export default function Home() {
+  const investigations = useInvestigations();
   const [filter, setFilter] = useState<Filter>("Critical");
-  const visible = applyFilter(filter);
+  const visible = applyFilter(filter, investigations);
+  const totalRisk = investigations.reduce((s, i) => s + i.risk, 0);
+  const criticalCount = investigations.filter((i) => i.severity === "critical").length;
 
   return (
     <div
