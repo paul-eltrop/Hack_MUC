@@ -19,8 +19,9 @@ from qdrant_client.models import Distance, PointStruct, VectorParams, Filter, Fi
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-DB_PATH = Path(__file__).parent / "links.db"
-QDRANT_PATH = str(Path(__file__).parent.parent / "rag" / "qdrant_storage")
+DB_PATH = Path(os.environ.get("PORTAL_DB_PATH") or Path(__file__).parent / "links.db")
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+QDRANT_PATH = os.environ.get("QDRANT_PATH") or str(Path(__file__).parent.parent / "rag" / "qdrant_storage")
 ACTIVE_COLLECTION = "documents"
 EMBEDDING_DIM = 1536
 MAX_UPLOAD_SIZE_BYTES = 30 * 1024 * 1024
@@ -133,9 +134,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+_allowed_origins = [o.strip() for o in os.environ.get("PORTAL_ALLOW_ORIGIN", "http://localhost:3000").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )

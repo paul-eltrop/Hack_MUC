@@ -1,0 +1,68 @@
+# Top-level stack for Hack_MUC on Vultr (chickentendr.club).
+# Caddy terminates TLS + routes: /agent_state.json → shared volume, /api/* → portal, rest → frontend.
+# Agent + portal share the qdrant_storage volume; agent writes the snapshot into agent_state volume.
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+      - agent_state:/shared:ro
+    depends_on:
+      - frontend
+      - portal
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        NEXT_PUBLIC_PORTAL_URL: https://chickentendr.club/api
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_PORTAL_URL: https://chickentendr.club/api
+      PORTAL_URL: http://portal:8000
+    expose:
+      - "3000"
+
+  portal:
+    build:
+      context: .
+      dockerfile: portal/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      QDRANT_PATH: /shared/qdrant_storage
+      PORTAL_DB_PATH: /data/links.db
+      PORTAL_ALLOW_ORIGIN: https://chickentendr.club
+    volumes:
+      - qdrant_storage:/shared/qdrant_storage
+      - portal_data:/data
+    expose:
+      - "8000"
+
+  agent_service:
+    build:
+      context: .
+      dockerfile: agent_service/Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      QDRANT_PATH: /shared/qdrant_storage
+      AGENT_STATE_PATH: /shared/agent_state.json
+    volumes:
+      - qdrant_storage:/shared/qdrant_storage
+      - agent_state:/shared
+
+volumes:
+  caddy_data:
+  caddy_config:
+  agent_state:
+  qdrant_storage:
+  portal_data:

@@ -1,0 +1,16 @@
+chickentendr.club {
+    encode gzip
+
+    handle /agent_state.json {
+        root * /shared
+        file_server
+    }
+
+    handle_path /api/* {
+        reverse_proxy portal:8000
+    }
+
+    handle {
+        reverse_proxy frontend:3000
+    }
+}

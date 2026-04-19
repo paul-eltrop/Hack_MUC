@@ -9,7 +9,10 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-SNAPSHOT_PATH = Path(__file__).parent.parent / "frontend" / "public" / "agent_state.json"
+SNAPSHOT_PATH = Path(
+    os.environ.get("AGENT_STATE_PATH")
+    or Path(__file__).parent.parent / "frontend" / "public" / "agent_state.json"
+)
 SCHEMA_VERSION = 1
 
 SUPPLIER_DB_TO_NODE = {
