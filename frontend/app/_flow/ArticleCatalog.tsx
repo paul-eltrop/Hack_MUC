@@ -17,12 +17,14 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import {
-  articleCatalog,
+  articleCatalog as defaultArticleCatalog,
   type ArticleInfo,
   type BomComponent,
   type BomFlag,
 } from "./flow-data";
 import { TWEMOJI_BASE } from "./flow-nodes";
+import { useAgentState } from "./agent-state";
+import { pickArticleCatalog } from "./applyAgentState";
 
 // ---------- Twemoji-Maps ----------
 
@@ -96,6 +98,8 @@ const FLOWER_CENTER = { x: 0, y: 0 };
 // ---------- Catalog-Container ----------
 
 export function ArticleCatalog() {
+  const snap = useAgentState();
+  const articleCatalog = pickArticleCatalog(snap, defaultArticleCatalog);
   const [selectedId, setSelectedId] = useState<string | null>(
     articleCatalog[0]?.articleId ?? null,
   );

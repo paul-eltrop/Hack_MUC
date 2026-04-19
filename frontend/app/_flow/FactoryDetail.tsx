@@ -24,6 +24,8 @@ import {
   type SectionCaseFlag,
 } from "./flow-data";
 import { TWEMOJI_BASE } from "./flow-nodes";
+import { useAgentState } from "./agent-state";
+import { pickFactoryDetail } from "./applyAgentState";
 
 // ---------- Layout-Konstanten ----------
 
@@ -65,7 +67,8 @@ const SECTION_LABEL: Record<FactorySectionType, string> = {
 type Props = { factoryId: string };
 
 export function FactoryDetail({ factoryId }: Props) {
-  const data = factoryDetails[factoryId];
+  const snap = useAgentState();
+  const data = pickFactoryDetail(snap, factoryId, factoryDetails[factoryId]);
   if (!data) return null;
   return (
     <div className="absolute inset-0 flex flex-col p-8 pointer-events-none">

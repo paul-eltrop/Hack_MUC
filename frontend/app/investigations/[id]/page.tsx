@@ -1,7 +1,9 @@
-import Link from "next/link";
-import { notFound } from "next/navigation";
+"use client";
 
-import { investigations } from "../../data";
+import Link from "next/link";
+import { notFound, useParams } from "next/navigation";
+
+import { useInvestigations } from "../../useInvestigations";
 
 const severityColor: Record<string, string> = {
   critical: "bg-red-600",
@@ -22,8 +24,9 @@ const timelineDot: Record<string, string> = {
   detection: "bg-gray-400",
 };
 
-export default async function InvestigationDetail({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default function InvestigationDetail() {
+  const { id } = useParams<{ id: string }>();
+  const investigations = useInvestigations();
   const inv = investigations.find((i) => i.id === id);
   if (!inv) notFound();
 

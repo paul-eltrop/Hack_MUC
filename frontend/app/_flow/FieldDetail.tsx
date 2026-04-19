@@ -2,15 +2,21 @@
 
 import { useMemo } from "react";
 import {
-  affectedArticles,
-  atRiskProducts,
-  fieldClaims,
+  articleCatalog as defaultArticleCatalog,
+  atRiskProducts as defaultAtRisk,
+  fieldClaims as defaultFieldClaims,
   type AffectedArticle,
   type AtRiskProduct,
   type AtRiskReason,
   type FieldClaimEntry,
 } from "./flow-data";
 import { TWEMOJI_BASE } from "./flow-nodes";
+import { useAgentState } from "./agent-state";
+import {
+  pickArticleCatalog,
+  pickAtRisk,
+  pickFieldClaims,
+} from "./applyAgentState";
 
 const REASON_LABEL: Record<AtRiskReason, string> = {
   supply: "Supply",
@@ -28,16 +34,23 @@ const REASON_BADGE: Record<AtRiskReason, string> = {
 };
 
 export function FieldDetail() {
-  const articles = useMemo(() => affectedArticles(), []);
-  const totalClaims = fieldClaims.length;
-  const totalAtRisk = atRiskProducts.length;
+  const snap = useAgentState();
+  const claims = pickFieldClaims(snap, defaultFieldClaims);
+  const atRisk = pickAtRisk(snap, defaultAtRisk);
+  const articleLookup = pickArticleCatalog(snap, defaultArticleCatalog);
+  const articles = useMemo(
+    () => groupAffectedArticles(claims, atRisk, articleLookup),
+    [claims, atRisk, articleLookup],
+  );
+  const totalClaims = claims.length;
+  const totalAtRisk = atRisk.length;
   const totalProducts = new Set([
-    ...fieldClaims.map((c) => c.productId),
-    ...atRiskProducts.map((r) => r.productId),
+    ...claims.map((c) => c.productId),
+    ...atRisk.map((r) => r.productId),
   ]).size;
   const totalMarkets = new Set([
-    ...fieldClaims.map((c) => c.market),
-    ...atRiskProducts.map((r) => r.market),
+    ...claims.map((c) => c.market),
+    ...atRisk.map((r) => r.market),
   ]).size;
 
   return (
@@ -65,6 +78,43 @@ export function FieldDetail() {
       </div>
     </div>
   );
+}
+
+function groupAffectedArticles(
+  claims: FieldClaimEntry[],
+  atRisk: AtRiskProduct[],
+  catalog: { articleId: string; name: string; emojiCode: string }[],
+): AffectedArticle[] {
+  const claimsByArt = new Map<string, FieldClaimEntry[]>();
+  for (const c of claims) {
+    const arr = claimsByArt.get(c.articleId) ?? [];
+    arr.push(c);
+    claimsByArt.set(c.articleId, arr);
+  }
+  const riskByArt = new Map<string, AtRiskProduct[]>();
+  for (const r of atRisk) {
+    const arr = riskByArt.get(r.articleId) ?? [];
+    arr.push(r);
+    riskByArt.set(r.articleId, arr);
+  }
+  const ids = new Set<string>([...claimsByArt.keys(), ...riskByArt.keys()]);
+  const result: AffectedArticle[] = [];
+  for (const articleId of ids) {
+    const article = catalog.find((a) => a.articleId === articleId);
+    if (!article) continue;
+    result.push({
+      articleId,
+      name: article.name,
+      emojiCode: article.emojiCode,
+      claims: claimsByArt.get(articleId) ?? [],
+      atRisk: riskByArt.get(articleId) ?? [],
+    });
+  }
+  result.sort(
+    (a, b) =>
+      b.claims.length + b.atRisk.length - (a.claims.length + a.atRisk.length),
+  );
+  return result;
 }
 
 function ArticleClaimsBlock({ article }: { article: AffectedArticle }) {

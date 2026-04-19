@@ -8,6 +8,8 @@ import {
   type PartMasterInfo,
 } from "./flow-data";
 import { NODE_W, TWEMOJI_BASE } from "./flow-nodes";
+import { useAgentState } from "./agent-state";
+import { pickSupplierDetail } from "./applyAgentState";
 
 const DATE_FMT = new Intl.DateTimeFormat("de-DE", {
   day: "2-digit",
@@ -56,7 +58,8 @@ export function SupplierDetail({
   selectedBatchId,
   onSelectBatch,
 }: Props) {
-  const data = supplierDetails[supplierId];
+  const snap = useAgentState();
+  const data = pickSupplierDetail(snap, supplierId, supplierDetails[supplierId]);
   const [granularity, setGranularity] = useState<Granularity>("month");
 
   const { pmGroups, scale, years, ticks } = useMemo(() => {

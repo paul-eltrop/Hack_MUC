@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { investigations } from "../../../data";
+import { useInvestigations } from "../../../useInvestigations";
 
 const ACTION_TYPES = ["Corrective Action", "Preventive Action", "Containment", "Supplier 8D"] as const;
 type ActionType = typeof ACTION_TYPES[number];
@@ -21,6 +21,7 @@ const OWNERS = [
 export default function ActionCreator() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const investigations = useInvestigations();
   const inv = investigations.find((i) => i.id === id);
 
   const [type, setType] = useState<ActionType>("Corrective Action");
