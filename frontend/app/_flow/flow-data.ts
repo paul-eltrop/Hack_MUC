@@ -38,7 +38,7 @@ export type BatchRow = {
   partNumber: string;
   receivedDate: string;
   qty: number;
-  parts: PartRow[];
+  parts?: PartRow[];
 };
 
 export type SupplierDetailData = {
@@ -696,7 +696,7 @@ export const supplierDetails: Record<string, SupplierDetailData> = {
 };
 
 export function flaggedPartsInBatch(batch: BatchRow): number {
-  return batch.parts.filter((p) => p.qualityStatus !== "ok").length;
+  return (batch.parts ?? []).filter((p) => p.qualityStatus !== "ok").length;
 }
 
 export function flaggedPartsForPm(

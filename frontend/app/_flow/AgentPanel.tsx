@@ -34,7 +34,7 @@ const OPEN_ISSUES: Issue[] = (() => {
     for (const batch of supplier.batches) {
       const flagged = flaggedPartsInBatch(batch);
       if (flagged === 0) continue;
-      const ratio = flagged / batch.parts.length;
+      const ratio = flagged / Math.max(batch.parts?.length ?? 0, 1);
       const severity: "bad" | "suspect" = ratio >= 0.2 ? "bad" : "suspect";
       const pm = partMasterFor(supplier, batch.partNumber);
       issues.push({
