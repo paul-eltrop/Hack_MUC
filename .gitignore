@@ -16,3 +16,4 @@ frontend/*
 !frontend/tsconfig.json
 __pycache__/
 *.pyc
+video/

@@ -10,6 +10,7 @@ from pathlib import Path
 import psycopg2
 import psycopg2.extras
 
+from . import analytics
 from . import db
 from . import state
 
@@ -199,6 +200,7 @@ def refresh_from_db() -> dict:
             snap["factoryDetails"] = _fetch_factories(cur)
             snap["articleCatalog"] = _fetch_articles(cur)
             snap["fieldClaims"] = _fetch_field_claims(cur)
+            snap["analytics"] = analytics.compute_analytics(cur)
     return snap
 
 

@@ -20,6 +20,48 @@ export type NodeOverride = {
   subtitle?: string;
 };
 
+export type TopDefect = {
+  code: string;
+  count: number;
+  severity: string | null;
+};
+
+export type DefectsByProductGroup = {
+  articleId: string;
+  name: string;
+  count: number;
+  defects: string[];
+};
+
+export type ProblemTypeBucket = {
+  type: "supply" | "technical_process" | "technical_design" | "personnel" | "other";
+  label: string;
+  count: number;
+  defects: string[];
+};
+
+export type AnalyticsBlock = {
+  kpis: {
+    timeSavedHours: number;
+    moneySavedEur: number;
+    topDefects: TopDefect[];
+    avgResolutionHours: number;
+    issuesLast30Days: number;
+    preventedClaims: number;
+    narrative: string | null;
+  };
+  charts: {
+    defectsByProductGroup: DefectsByProductGroup[];
+    problemTypes: ProblemTypeBucket[];
+  };
+  computedAt: string;
+  windowDays: number;
+  assumptions: {
+    hourlyReworkRateEur: number;
+    preventedClaimCostEur: number;
+  };
+};
+
 export type AgentSnapshot = {
   schemaVersion: number;
   generatedAt: string | null;
@@ -33,6 +75,7 @@ export type AgentSnapshot = {
   fieldClaims: FieldClaimEntry[];
   atRiskProducts: AtRiskProduct[];
   investigations: Investigation[];
+  analytics: AnalyticsBlock | null;
 };
 
 const POLL_INTERVAL_MS = 10_000;
@@ -44,7 +87,8 @@ function isPopulated(snap: AgentSnapshot | null): boolean {
     Object.keys(snap.nodes).length > 0 ||
     snap.investigations.length > 0 ||
     snap.fieldClaims.length > 0 ||
-    snap.articleCatalog.length > 0
+    snap.articleCatalog.length > 0 ||
+    snap.analytics !== null
   );
 }
 

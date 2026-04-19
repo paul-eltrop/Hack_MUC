@@ -52,6 +52,7 @@ def empty_snapshot() -> dict:
         "fieldClaims": [],
         "atRiskProducts": [],
         "investigations": [],
+        "analytics": None,
     }
 
 
