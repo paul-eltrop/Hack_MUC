@@ -21,6 +21,7 @@ export function LabeledEdge({
   targetPosition,
   label,
   markerEnd,
+  markerStart,
   style,
   data,
 }: EdgeProps) {
@@ -66,7 +67,13 @@ export function LabeledEdge({
 
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={pathStyle} />
+      <BaseEdge
+        id={id}
+        path={path}
+        markerStart={markerStart}
+        markerEnd={markerEnd}
+        style={pathStyle}
+      />
       {label && (
         <EdgeLabelRenderer>
           <div

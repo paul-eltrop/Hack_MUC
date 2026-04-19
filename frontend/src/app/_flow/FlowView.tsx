@@ -19,11 +19,17 @@ import {
   initialEdges,
   initialNodes,
   subFlows,
+  type FlowKind,
   type FlowNodeData,
   type TopFlowNode,
 } from "./flow-data";
 import { edgeTypes } from "./flow-edges";
 import { BG_W, NODE_H, NODE_W, nodeSize, nodeTypes } from "./flow-nodes";
+import { SupplierDetail } from "./SupplierDetail";
+import { ArticleCatalog } from "./ArticleCatalog";
+import { FactoryDetail } from "./FactoryDetail";
+import { FieldDetail } from "./FieldDetail";
+import { AgentPanel } from "./AgentPanel";
 
 const OVERVIEW_PADDING = 0.15;
 const SUB_FLOW_PADDING = 0.2;
@@ -71,7 +77,12 @@ function Inner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
   const [viewMode, setViewMode] = useState<ViewMode>("overview");
   const [focusedId, setFocusedId] = useState<string | null>(null);
+  const [focusedKind, setFocusedKind] = useState<FlowKind | null>(null);
+  const [selectedBatchId, setSelectedBatchId] = useState<string | null>(null);
+  const [contentClosing, setContentClosing] = useState(false);
   const reactFlow = useReactFlow();
+
+  const CONTENT_EXIT_MS = 250;
 
   const onNodeClick: NodeMouseHandler = useCallback(
     (_, node) => {
@@ -135,6 +146,8 @@ function Inner() {
       };
 
       setFocusedId(node.id);
+      setFocusedKind(data.kind);
+      setSelectedBatchId(null);
       setNodes((prev) => [
         ...prev.map((n) => ({
           ...n,
@@ -161,8 +174,19 @@ function Inner() {
       );
 
       setTimeout(() => {
-        setNodes([bgNode, ...positionedSubNodes]);
-        setEdges(sub.edges);
+        if (
+          data.kind === "supplier" ||
+          data.kind === "design" ||
+          data.kind === "factory" ||
+          data.kind === "field"
+        ) {
+          // Alle Detail-Views laufen über HTML-Overlay statt Mini-Nodes.
+          setNodes([bgNode]);
+          setEdges([]);
+        } else {
+          setNodes([bgNode, ...positionedSubNodes]);
+          setEdges(sub.edges);
+        }
         setViewMode("sub-flow");
       }, ZOOM_DURATION / 2);
     },
@@ -170,96 +194,160 @@ function Inner() {
   );
 
   const onBack = useCallback(() => {
-    // Phase 1: Minis wegploppen, Bg reverst, Kamera zoomt raus.
-    setNodes((prev) =>
-      prev.map((n) =>
-        n.type === "bg"
-          ? { ...n, data: { ...n.data, _reversing: true } }
-          : { ...n, data: { ...n.data, _disappearing: true } },
-      ),
-    );
-    setEdges((prev) =>
-      prev.map((e) => ({
-        ...e,
-        data: { ...(e.data ?? {}), _disappearing: true },
-      })),
-    );
-    // `fitBounds` mit den vorberechneten Overview-Bounds — die Overview-Nodes
-    // sind in diesem Moment noch gar nicht im State (nur bg + minis), daher
-    // können wir nicht `fitView({ nodes: [...] })` benutzen.
-    reactFlow.fitBounds(OVERVIEW_BOUNDS, {
-      duration: ZOOM_DURATION,
-      padding: OVERVIEW_PADDING,
-    });
+    // Phase 0: Content zuerst ausblenden — Panel fadet weg, dann erst startet
+    // der Rest (Bg shrinkt, Kamera zoomt raus, Overview-Nodes ploppen rein).
+    setContentClosing(true);
 
-    // Phase 2 (Halbzeit): Overview-Nodes und Edges gleichzeitig rein — Nodes
-    // poppen, Edges faden. Stabil, da RF die Nodes gegen unscaled Outer misst.
     setTimeout(() => {
-      setNodes((prev) => {
-        const bg = prev.find((n) => n.type === "bg");
-        const overview = initialNodes.map((n) => ({
-          ...n,
-          data: { ...n.data, _entering: true },
-        }));
-        return bg ? [bg, ...overview] : overview;
-      });
-      setEdges(
-        initialEdges.map((e) => ({
+      // Phase 1: Minis wegploppen, Bg reverst, Kamera zoomt raus.
+      setNodes((prev) =>
+        prev.map((n) =>
+          n.type === "bg"
+            ? { ...n, data: { ...n.data, _reversing: true } }
+            : { ...n, data: { ...n.data, _disappearing: true } },
+        ),
+      );
+      setEdges((prev) =>
+        prev.map((e) => ({
           ...e,
-          data: { ...(e.data ?? {}), _entering: true },
+          data: { ...(e.data ?? {}), _disappearing: true },
         })),
       );
-      setViewMode("overview");
-      setFocusedId(null);
-    }, ZOOM_DURATION / 2);
+      reactFlow.fitBounds(OVERVIEW_BOUNDS, {
+        duration: ZOOM_DURATION,
+        padding: OVERVIEW_PADDING,
+      });
 
-    // Phase 3 (Bg fertig geschrumpft): clean final state ohne Bg und ohne Flags.
-    setTimeout(() => {
-      setNodes(initialNodes);
-      setEdges(initialEdges);
-    }, 1000);
+      // Phase 2 (Halbzeit): Overview-Nodes und Edges gleichzeitig rein.
+      setTimeout(() => {
+        setNodes((prev) => {
+          const bg = prev.find((n) => n.type === "bg");
+          const overview = initialNodes.map((n) => ({
+            ...n,
+            data: { ...n.data, _entering: true },
+          }));
+          return bg ? [bg, ...overview] : overview;
+        });
+        setEdges(
+          initialEdges.map((e) => ({
+            ...e,
+            data: { ...(e.data ?? {}), _entering: true },
+          })),
+        );
+        setViewMode("overview");
+        setFocusedId(null);
+        setFocusedKind(null);
+        setSelectedBatchId(null);
+        setContentClosing(false);
+      }, ZOOM_DURATION / 2);
+
+      // Phase 3 (Bg fertig geschrumpft): clean final state ohne Bg und Flags.
+      setTimeout(() => {
+        setNodes(initialNodes);
+        setEdges(initialEdges);
+      }, 1000);
+    }, CONTENT_EXIT_MS);
   }, [reactFlow, setNodes, setEdges]);
 
   return (
-    <div className="fixed inset-0 bg-zinc-50">
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
-        defaultEdgeOptions={defaultEdgeOptions}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={onNodeClick}
-        fitView
-        fitViewOptions={{ padding: OVERVIEW_PADDING }}
-        proOptions={{ hideAttribution: true }}
-        panOnDrag={false}
-        panOnScroll={false}
-        zoomOnScroll={false}
-        zoomOnPinch={false}
-        zoomOnDoubleClick={false}
-        nodesDraggable={false}
-        nodesConnectable={false}
-        elementsSelectable={false}
-        minZoom={0.1}
-        maxZoom={4}
-      >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={18}
-          size={1}
-          color="#d4d4d8"
-        />
-      </ReactFlow>
-      {viewMode === "sub-flow" && (
-        <button
-          onClick={onBack}
-          className="absolute top-6 left-6 z-10 px-3 py-2 bg-white border border-zinc-200 rounded-lg shadow-sm hover:bg-zinc-50 transition text-sm text-zinc-700 font-medium"
+    <div className="fixed inset-0 flex bg-zinc-50">
+      <div className="flex-1 relative min-w-0">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          defaultEdgeOptions={defaultEdgeOptions}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeClick={onNodeClick}
+          fitView
+          fitViewOptions={{ padding: OVERVIEW_PADDING }}
+          proOptions={{ hideAttribution: true }}
+          panOnDrag={false}
+          panOnScroll={false}
+          zoomOnScroll={false}
+          zoomOnPinch={false}
+          zoomOnDoubleClick={false}
+          nodesDraggable={false}
+          nodesConnectable={false}
+          elementsSelectable={false}
+          minZoom={0.1}
+          maxZoom={4}
         >
-          ← Zurück
-        </button>
-      )}
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={18}
+            size={1}
+            color="#d4d4d8"
+          />
+        </ReactFlow>
+        {viewMode === "sub-flow" &&
+          focusedKind === "supplier" &&
+          focusedId && (
+            <div
+              className={`absolute inset-0 z-10 pointer-events-none ${
+                contentClosing
+                  ? "animate-panel-fade-out"
+                  : "animate-panel-fade-in"
+              }`}
+            >
+              <SupplierDetail
+                supplierId={focusedId}
+                selectedBatchId={selectedBatchId}
+                onSelectBatch={setSelectedBatchId}
+              />
+            </div>
+          )}
+        {viewMode === "sub-flow" && focusedKind === "design" && (
+          <div
+            className={`absolute inset-0 z-10 pointer-events-none ${
+              contentClosing
+                ? "animate-panel-fade-out"
+                : "animate-panel-fade-in"
+            }`}
+          >
+            <ArticleCatalog />
+          </div>
+        )}
+        {viewMode === "sub-flow" &&
+          focusedKind === "factory" &&
+          focusedId && (
+            <div
+              className={`absolute inset-0 z-10 pointer-events-none ${
+                contentClosing
+                  ? "animate-panel-fade-out"
+                  : "animate-panel-fade-in"
+              }`}
+            >
+              <FactoryDetail factoryId={focusedId} />
+            </div>
+          )}
+        {viewMode === "sub-flow" && focusedKind === "field" && (
+          <div
+            className={`absolute inset-0 z-10 pointer-events-none ${
+              contentClosing
+                ? "animate-panel-fade-out"
+                : "animate-panel-fade-in"
+            }`}
+          >
+            <FieldDetail />
+          </div>
+        )}
+        {viewMode === "sub-flow" && (
+          <button
+            onClick={onBack}
+            className="absolute top-6 left-6 z-20 px-3 py-2 bg-white border border-zinc-200 rounded-lg shadow-sm hover:bg-zinc-50 transition text-sm text-zinc-700 font-medium"
+          >
+            ← Zurück
+          </button>
+        )}
+      </div>
+      <AgentPanel
+        focusedKind={focusedKind}
+        focusedId={focusedId}
+        selectedBatchId={selectedBatchId}
+      />
     </div>
   );
 }

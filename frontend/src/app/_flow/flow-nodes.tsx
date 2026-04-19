@@ -9,7 +9,7 @@ import {
 } from "@xyflow/react";
 import type { FlowKind, FlowNodeData } from "./flow-data";
 
-const TWEMOJI_BASE =
+export const TWEMOJI_BASE =
   "https://cdn.jsdelivr.net/gh/jdecked/twemoji@15.1.0/assets/svg";
 
 export const NODE_W = 220;
@@ -32,6 +32,7 @@ export const kindLabel: Record<FlowKind, string> = {
   supplier: "Supplier",
   factory: "Factory",
   field: "Field",
+  design: "Designs",
 };
 
 export function FlowNode({ data }: NodeProps) {
@@ -49,8 +50,15 @@ export function FlowNode({ data }: NodeProps) {
       style={{ width: NODE_W, height: NODE_H }}
     >
       <Handle
+        id="left"
         type="target"
         position={Position.Left}
+        style={{ opacity: 0 }}
+      />
+      <Handle
+        id="top"
+        type="target"
+        position={Position.Top}
         style={{ opacity: 0 }}
       />
       <div
@@ -88,8 +96,15 @@ export function FlowNode({ data }: NodeProps) {
         )}
       </div>
       <Handle
+        id="right"
         type="source"
         position={Position.Right}
+        style={{ opacity: 0 }}
+      />
+      <Handle
+        id="bottom"
+        type="source"
+        position={Position.Bottom}
         style={{ opacity: 0 }}
       />
     </div>
@@ -168,7 +183,9 @@ export function BgNode({ data }: NodeProps) {
       ? "bg-purple-200/50"
       : d.kind === "factory"
         ? "bg-sky-200/50"
-        : "bg-emerald-200/50";
+        : d.kind === "design"
+          ? "bg-amber-200/50"
+          : "bg-emerald-200/50";
 
   // Wir interpolieren die GEWÜNSCHTE Screen-Pixel-Größe (von Node-at-initial-zoom
   // bis Viewport-überdeckend) und rechnen dann die Flow-Scale zurück — durch
